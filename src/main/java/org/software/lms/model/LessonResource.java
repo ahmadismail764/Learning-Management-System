@@ -25,11 +25,38 @@ public class LessonResource {
     private String fileUrl;
 
     @Enumerated(EnumType.STRING)
-    private ResourceType type; // PDF, VIDEO, AUDIO, etc.
+    private ResourceType type;
 
+    @Column(nullable = false)
     private long fileSize;
 
     @Column(nullable = false)
     private Date uploadedAt = new Date();
+
+    @Override
+    public String toString() {
+        return "LessonResource{" +
+                "id=" + id +
+                ", lesson=" + lesson +
+                ", fileName='" + fileName + '\'' +
+                ", fileUrl='" + fileUrl + '\'' +
+                ", type=" + type +
+                ", fileSize=" + fileSize +
+                ", uploadedAt=" + uploadedAt +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LessonResource that = (LessonResource) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
 
