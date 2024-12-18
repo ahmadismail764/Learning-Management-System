@@ -25,6 +25,7 @@ public class LessonResource {
     private String fileUrl;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ResourceType type;
 
     @Column(nullable = false)

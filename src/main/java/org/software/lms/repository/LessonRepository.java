@@ -1,7 +1,5 @@
 package org.software.lms.repository;
-import org.software.lms.model.Course;
 import org.software.lms.model.Lesson;
-import org.software.lms.model.LessonResource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

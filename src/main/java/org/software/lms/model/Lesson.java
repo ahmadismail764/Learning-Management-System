@@ -32,6 +32,16 @@ public class Lesson {
     @Column(nullable = false)
     private Date otpExpirationTime;
 
+    @Column(nullable = false , updatable = false)
+    private Date createdAt = new Date();
+
+    @Column(nullable = false)
+    private Date updatedAt;
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = new Date();
+    }
     @ManyToMany
     @JoinTable(
             name = "Lesson_students",

@@ -12,13 +12,9 @@ import java.util.Optional;
 @Repository
 public interface LessonResourceRepository extends JpaRepository<LessonResource, Long> {
     List<LessonResource> findByFileName(String fileName);
-
     List<LessonResource> findByLesson_Id(Long lessonId);
-
     List<LessonResource> findByType(ResourceType type);
-
     List<LessonResource> findByFileSizeGreaterThan(long fileSize);
-
     List<LessonResource> findByLesson(Lesson lesson);
 }
 

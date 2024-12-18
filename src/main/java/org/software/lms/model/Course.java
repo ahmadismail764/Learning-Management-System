@@ -43,9 +43,10 @@ public class Course {
     )
     private Set<User> studentEnrolledCourses = new HashSet<>();
 
-    @Column(nullable = false)
+    @Column(nullable = false , updatable = false)
     private Date createdAt = new Date();
 
+    @Column(nullable = false)
     private Date updatedAt;
 
     @PreUpdate
