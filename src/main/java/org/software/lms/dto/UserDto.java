@@ -12,6 +12,9 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private String email;
+
+    private String password; // Add this for user creation
+
     private Role role;
 
     public Long getId() {
@@ -54,13 +57,23 @@ public class UserDto {
         this.role = role;
     }
 
-    public UserDto(Long id, String firstName, String lastName, String email, Role role) {
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public UserDto(Long id, String firstName, String lastName, String email, String password, Role role) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.password = password;
         this.role = role;
     }
+
     public UserDto() {
         this.id = id;
         this.firstName = firstName;

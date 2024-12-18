@@ -2,6 +2,7 @@ package org.software.lms.service;
 
 import org.software.lms.dto.AuthenticationRequest;
 import org.software.lms.dto.AuthenticationResponse;
+import org.software.lms.model.Role;
 import org.software.lms.security.JwtUtil;
 import org.software.lms.model.User;
 import org.software.lms.repository.UserRepository;
@@ -40,10 +41,14 @@ public class AuthenticationService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        // You might want to add more fields or use a separate registration DTO
+        // Set default values if not provided
+        user.setFirstName(request.getFirstName() != null ? request.getFirstName() : "User");
+        user.setLastName(request.getLastName() != null ? request.getLastName() : "");
+
+        user.setRole(request.getRole() != null ? request.getRole() : Role.STUDENT);
+
         User savedUser = userRepository.save(user);
 
-        // Generate JWT token
         UserDetails userDetails = org.springframework.security.core.userdetails.User
                 .withUsername(savedUser.getEmail())
                 .password(savedUser.getPassword())
@@ -52,7 +57,6 @@ public class AuthenticationService {
 
         String token = jwtUtil.generateToken(userDetails);
 
-        // Create and return authentication response
         return new AuthenticationResponse(
                 savedUser.getId(),
                 savedUser.getEmail(),

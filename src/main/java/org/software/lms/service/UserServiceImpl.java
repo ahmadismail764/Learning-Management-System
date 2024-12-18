@@ -33,8 +33,13 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         BeanUtils.copyProperties(userDto, user);
 
+        // Set a default role if not specified
+        if (user.getRole() == null) {
+            user.setRole(Role.STUDENT);
+        }
+
         // Encode password before saving
-        user.setPassword(passwordEncoder.encode(userDto.getEmail() + userDto.getRole())); // Temporary password generation
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         User savedUser = userRepository.save(user);
 
