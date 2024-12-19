@@ -54,12 +54,10 @@ public class CourseController {
     public List<Course> findCoursesByTitle(@PathVariable String title) {
         return courseService.findCoursesByTitle(title);
     }
-
     @GetMapping("/search/by-instructor/{instructorId}")
     public List<Course> findCoursesByInstructorId(@PathVariable Long instructorId) {
         return courseService.findCoursesByInstructorId(instructorId);
     }
-
     @GetMapping("/search/by-created-date/{createdAt}")
     public List<Course> findCoursesByCreatedAtAfter(@PathVariable java.util.Date createdAt) {
         return courseService.findCoursesByCreatedAtAfter(createdAt);

@@ -47,7 +47,7 @@ public class Course {
             joinColumns = @JoinColumn(name = "student_id"),
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
-    private Set<User> studentEnrolledCourses = new HashSet<>();
+        private List<User> studentEnrolledCourses = new ArrayList<>();
 
     @PreUpdate
     protected void onUpdate() {
@@ -69,7 +69,7 @@ public class Course {
 
     public void addEnrolledStudent(User student) {
         if (this.studentEnrolledCourses == null) {
-            this.studentEnrolledCourses = new HashSet<>();
+            this.studentEnrolledCourses = new ArrayList<>();
         }
         this.studentEnrolledCourses.add(student);
     }
@@ -136,12 +136,12 @@ public class Course {
         }
         this.lessons = lessons;
     }
-    public Set<User> getStudentEnrolledCourses() {
+    public List<User> getStudentEnrolledCourses() {
         return studentEnrolledCourses;
     }
-    public void setStudentEnrolledCourses(Set<User> studentEnrolledCourses) {
+    public void setStudentEnrolledCourses(List<User> studentEnrolledCourses) {
         if (this.studentEnrolledCourses == null) {
-            this.studentEnrolledCourses = new HashSet<>();
+            this.studentEnrolledCourses =  new ArrayList<>();;
         }
         this.studentEnrolledCourses = studentEnrolledCourses;
     }

@@ -2,6 +2,7 @@ package org.software.lms.service;
 
 import org.software.lms.model.Course;
 import org.software.lms.model.Lesson;
+import org.software.lms.model.Role;
 import org.software.lms.model.User;
 import org.software.lms.repository.CourseRepository;
 import org.software.lms.repository.LessonRepository;
@@ -77,8 +78,10 @@ public class CourseService {
         if (instructors.isEmpty()) {
             throw new RuntimeException("No instructors found with provided IDs");
         }
-        course.getInstructors().addAll(instructors);
+        for (User user : instructors) {
+            if (user.getRole() == Role.INSTRUCTOR) course.addInstructor(user);
 
+        }
         return courseRepository.save(course);
     }
 
@@ -91,7 +94,10 @@ public class CourseService {
         if (students.isEmpty()) {
             throw new RuntimeException("No instructors found with provided IDs");
         }
-        course.getStudentEnrolledCourses().addAll(students);
+
+        for (User user : students) {
+            if (user.getRole() == Role.STUDENT) course.addEnrolledStudent(user);
+        }
 
         return courseRepository.save(course);
     }
