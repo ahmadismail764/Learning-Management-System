@@ -1,16 +1,25 @@
 package org.software.lms.service;
 
 import org.software.lms.model.Course;
+import org.software.lms.model.Lesson;
+import org.software.lms.model.User;
 import org.software.lms.repository.CourseRepository;
+import org.software.lms.repository.LessonRepository;
+import org.software.lms.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CourseService {
-
+    @Autowired
+    private  UserRepository userRepository ;
+    @Autowired
+    private LessonRepository lessonRepository ;
+    @Autowired
     private final CourseRepository courseRepository;
 
     @Autowired
@@ -55,7 +64,50 @@ public class CourseService {
         return courseRepository.findByInstructors_Id(instructorId);
     }
 
-    public List<Course> findCoursesByCreatedAtAfter(java.util.Date createdAt) {
+    public List<Course> findCoursesByCreatedAtAfter(Date createdAt) {
         return courseRepository.findByCreatedAtAfter(createdAt);
     }
+
+    public Course addInstructorsToCourse(Long courseId, List<Long> instructorIds) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+
+        List<User> instructors = userRepository.findAllById(instructorIds);
+
+        if (instructors.isEmpty()) {
+            throw new RuntimeException("No instructors found with provided IDs");
+        }
+        course.getInstructors().addAll(instructors);
+
+        return courseRepository.save(course);
+    }
+
+    public Course addStudentsToCourse(Long courseId, List<Long> studentsIds) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+
+        List<User> students = userRepository.findAllById(studentsIds);
+
+        if (students.isEmpty()) {
+            throw new RuntimeException("No instructors found with provided IDs");
+        }
+        course.getStudentEnrolledCourses().addAll(students);
+
+        return courseRepository.save(course);
+    }
+
+    public Course addLessonsToCourse(Long courseId, List<Long> lessonIds) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+
+        List<Lesson> lesson = lessonRepository.findAllById(lessonIds);
+
+        if (lesson.isEmpty()) {
+            throw new RuntimeException("No instructors found with provided IDs");
+        }
+        course.getLessons().addAll(lesson);
+
+        return courseRepository.save(course);
+    }
+
 }

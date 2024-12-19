@@ -4,6 +4,7 @@ import org.software.lms.dto.CourseDto;
 import org.software.lms.model.Course;
 import org.software.lms.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,4 +64,19 @@ public class CourseController {
     public List<Course> findCoursesByCreatedAtAfter(@PathVariable java.util.Date createdAt) {
         return courseService.findCoursesByCreatedAtAfter(createdAt);
     }
+    @PostMapping("/{id}/instructors")
+    public ResponseEntity<Course> addInstructorsToCourse(@PathVariable Long id, @RequestBody List<Long> instructorIds) {
+        return ResponseEntity.ok(courseService.addInstructorsToCourse(id, instructorIds));
+    }
+
+    @PostMapping("/{id}/students")
+    public ResponseEntity<Course> addStudentsToCourse(@PathVariable Long id, @RequestBody List<Long> studentIds) {
+        return ResponseEntity.ok(courseService.addStudentsToCourse(id, studentIds));
+    }
+
+    @PostMapping("/{id}/lessons")
+    public ResponseEntity<Course> addLessonsToCourse(@PathVariable Long id, @RequestBody List<Long> lessonIds) {
+        return ResponseEntity.ok(courseService.addLessonsToCourse(id, lessonIds));
+    }
 }
+
