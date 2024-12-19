@@ -10,6 +10,7 @@ import org.software.lms.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -116,4 +117,47 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
+    public Course updateInstructorsToCourse(Long courseId, List<Long> instructorIds) {
+            Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+            List<User> instructors = userRepository.findAllById(instructorIds);
+
+            course.setInstructors(new ArrayList<>(instructors));
+            return courseRepository.save(course);
+
+     }
+    public Course updateStudentsOfCourse(Long courseId, List<Long> studentIds) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        List<User> students = userRepository.findAllById(studentIds);
+
+        course.setStudentEnrolledCourses(new ArrayList<>(students));
+        return courseRepository.save(course);
+    }
+    public Course updateLessonsOfCourse(Long courseId, List<Long> lessonIds) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        List<Lesson> lessons = lessonRepository.findAllById(lessonIds);
+
+        course.setLessons(new ArrayList<>(lessons));
+        return courseRepository.save(course);
+    }
+    public void deleteInstructorFromCourse(Long courseId, Long instructorId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        User instructor = userRepository.findById(instructorId).orElseThrow(() -> new RuntimeException("Instructor not found"));
+
+        course.getInstructors().remove(instructor);
+        courseRepository.save(course);
+    }
+    public void deleteStudentFromCourse(Long courseId, Long studentId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        User student = userRepository.findById(studentId).orElseThrow(() -> new RuntimeException("Student not found"));
+
+        course.getStudentEnrolledCourses().remove(student);
+        courseRepository.save(course);
+    }
+    public void deleteLessonFromCourse(Long courseId, Long lessonId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+        course.getLessons().remove(lesson);
+        courseRepository.save(course);
+    }
 }
