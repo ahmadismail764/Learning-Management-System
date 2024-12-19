@@ -23,11 +23,11 @@ public class AssignmentService {
     public Assignment createAssignment(Assignment assignment) {
         return assignmentRepository.save(assignment);
     }
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT') ")
     public Submission submitAssignment(Submission submission) {
         return submissionRepository.save(submission);
     }
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("hasRole('INSTRUCTOR') ")
     public Submission gradeAssignment(Long submissionId, Double grade, String feedback) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
@@ -36,12 +36,12 @@ public class AssignmentService {
         return submissionRepository.save(submission);
     }
 
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("hasRole('INSTRUCTOR') ")
     public List<Submission> getSubmissionsByAssignment(Long assignmentId) {
         return submissionRepository.findByAssignmentId(assignmentId);
     }
 
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("hasRole('INSTRUCTOR') ")
     public List<Submission> getSubmissionsByStudent(Long studentId) {
         return submissionRepository.findByStudentId(studentId);
     }
