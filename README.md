@@ -29,3 +29,9 @@
 - **Students** can:
     - Select the lesson they wish to attend.
     - Enter the OTP provided by the instructor to mark their attendance.
+
+token : eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhQGdtYWlsLmNvbSIsImlhdCI6MTczNDU1ODI2NywiZXhwIjoxNzM0NjQ0NjY3fQ.M776_S4e7roamMC1Dy_5f8F70fkw0XmcE-dC0OjNj5M
+{
+"email":"a@gmail.com",
+"password":"1"
+}

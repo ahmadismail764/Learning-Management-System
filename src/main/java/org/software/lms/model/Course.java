@@ -7,7 +7,6 @@ import java.util.*;
 
 @Entity
 @Table(name = "courses")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course {
@@ -99,4 +98,69 @@ public class Course {
             this.lessons.remove(lesson);
         }
     }
+
+    public String getTitle() {
+        return title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    public Integer getDuration() {
+        return duration;
+    }
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+    public List<User> getInstructors() {
+        return instructors;
+    }
+    public void setInstructors(List<User> instructors) {
+        if (this.instructors == null) {
+            this.instructors = new ArrayList<>();
+        }
+        this.instructors = instructors;
+    }
+    public List<Lesson> getLessons() {
+        return lessons;
+    }
+    public void setLessons(List<Lesson> lessons) {
+        if (this.lessons == null) {
+            this.lessons = new ArrayList<>();
+        }
+        this.lessons = lessons;
+    }
+    public Set<User> getStudentEnrolledCourses() {
+        return studentEnrolledCourses;
+    }
+    public void setStudentEnrolledCourses(Set<User> studentEnrolledCourses) {
+        if (this.studentEnrolledCourses == null) {
+            this.studentEnrolledCourses = new HashSet<>();
+        }
+        this.studentEnrolledCourses = studentEnrolledCourses;
+    }
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
 }
