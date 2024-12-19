@@ -22,7 +22,7 @@ public class Lesson {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "course_id",nullable = false)
     private Course course;
 
     @Column(nullable = false , unique = true )
@@ -39,12 +39,20 @@ public class Lesson {
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = new Date();
+        this.updatedAt = updatedAt != null ? updatedAt : new Date();
+
     }
+    @PrePersist
+    protected void onPersist() {
+        if (updatedAt == null) {
+            updatedAt = new Date();
+        }
+    }
+
     @ManyToMany
     @JoinTable(
             name = "Lesson_students",
-            joinColumns = @JoinColumn(name = "user_id"),
+            joinColumns = @JoinColumn(name = "student_id"),
             inverseJoinColumns = @JoinColumn(name = "lesson_id")
     )    private List<User> attendances = new ArrayList<>();
 

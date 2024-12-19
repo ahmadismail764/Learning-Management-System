@@ -49,8 +49,8 @@ public class CourseController {
         courseService.deleteCourse(id);
     }
 
-    @GetMapping("/search/by-title")
-    public List<Course> findCoursesByTitle(@RequestParam String title) {
+    @GetMapping("/search/by-title/{title}")
+    public List<Course> findCoursesByTitle(@PathVariable String title) {
         return courseService.findCoursesByTitle(title);
     }
 
@@ -59,8 +59,8 @@ public class CourseController {
         return courseService.findCoursesByInstructorId(instructorId);
     }
 
-    @GetMapping("/search/by-created-date")
-    public List<Course> findCoursesByCreatedAtAfter(@RequestParam java.util.Date createdAt) {
+    @GetMapping("/search/by-created-date/{createdAt}")
+    public List<Course> findCoursesByCreatedAtAfter(@PathVariable java.util.Date createdAt) {
         return courseService.findCoursesByCreatedAtAfter(createdAt);
     }
 }
