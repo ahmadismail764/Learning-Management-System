@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -35,6 +36,9 @@ public class User {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
+
+    @OneToMany(mappedBy = "users")
+    private List<QuizAttempt> quizAttempts;
 
     public Long getId() {
         return id;
@@ -90,6 +94,13 @@ public class User {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+    public List<QuizAttempt> getQuizAttempts() {
+        return quizAttempts;
+    }
+
+    public void setQuizAttempts(List<QuizAttempt> quizAttempts) {
+        this.quizAttempts = quizAttempts;
     }
 }
 
