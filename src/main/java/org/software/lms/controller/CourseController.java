@@ -63,11 +63,13 @@ public class CourseController {
         return courseService.findCoursesByCreatedAtAfter(createdAt);
     }
     @PostMapping("/{id}/instructors")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Course> addInstructorsToCourse(@PathVariable Long id, @RequestBody List<Long> instructorIds) {
         return ResponseEntity.ok(courseService.addInstructorsToCourse(id, instructorIds));
     }
 
     @PutMapping("/{id}/instructors")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Course> updateInstructorsToCourse(@PathVariable Long id, @RequestBody List<Long> instructorIds) {
         Course updatedCourse = courseService.updateInstructorsToCourse(id, instructorIds);
         return ResponseEntity.ok(updatedCourse);
@@ -80,19 +82,23 @@ public class CourseController {
     }
 
     @PutMapping("/{id}/students")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Course> updateStudentsOfCourse(@PathVariable Long id, @RequestBody List<Long> studentIds) {
         return ResponseEntity.ok(courseService.updateStudentsOfCourse(id, studentIds));
     }
 
     @PostMapping("/{id}/lessons")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Course> addLessonsToCourse(@PathVariable Long id, @RequestBody List<Long> lessonIds) {
         return ResponseEntity.ok(courseService.addLessonsToCourse(id, lessonIds));
     }
     @PutMapping("/{id}/lessons")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Course> updateLessonsOfCourse(@PathVariable Long id, @RequestBody List<Long> lessonIds) {
         return ResponseEntity.ok(courseService.updateLessonsOfCourse(id, lessonIds));
     }
     @DeleteMapping("/{id}/instructors/{instructorId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteInstructorFromCourse(@PathVariable Long id, @PathVariable Long instructorId) {
         courseService.deleteInstructorFromCourse(id, instructorId);
         return ResponseEntity.noContent().build();
@@ -104,6 +110,7 @@ public class CourseController {
     }
 
     @DeleteMapping("/{id}/lessons/{lessonId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteLessonFromCourse(@PathVariable Long id, @PathVariable Long lessonId) {
         courseService.deleteLessonFromCourse(id, lessonId);
         return ResponseEntity.noContent().build();
