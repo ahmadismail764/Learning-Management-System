@@ -1,11 +1,14 @@
 package org.software.lms.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -39,6 +42,10 @@ public class User {
 
     @OneToMany(mappedBy = "users")
     private List<QuizAttempt> quizAttempts;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "instructor")
+    private Set<Course> coursesTeaching = new HashSet<>();
 
     public Long getId() {
         return id;

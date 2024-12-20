@@ -29,6 +29,15 @@ public class Course {
     @Column(nullable = false)
     private Date updatedAt;
 
+    @OneToMany(mappedBy = "course")
+    private List<Quiz> quizzes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course")
+    private List<Assignment> assignments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course")
+    private List<Question> questionBank = new ArrayList<>();
+
 
     @ManyToMany
     @JoinTable(

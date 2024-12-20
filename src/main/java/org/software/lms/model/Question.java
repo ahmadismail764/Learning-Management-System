@@ -2,6 +2,8 @@ package org.software.lms.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,11 +25,18 @@ public class Question {
     @Column(nullable = false)
     private QuestionType type;
 
-//    @ManyToOne
-//    @JoinColumn(name = "course_id", nullable = false)
-//    private Course course;
+    @ElementCollection
+    private List<String> options = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "questions")
-    private List<Quiz> quizzes;
+    private String correctAnswer;
+
+    private String selectedAnswer;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+
+//    @ManyToMany(mappedBy = "questions")
+//    private List<Quiz> quizzes;
 
 }

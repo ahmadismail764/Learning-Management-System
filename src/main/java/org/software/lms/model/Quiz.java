@@ -20,26 +20,29 @@ public class Quiz {
     private Long id;
 
     @Column(nullable = false)
-    // Duration in hours, minutes, etc.
-    private Duration duration = Duration.ofHours(1);
+    private String title;
 
     @Column(nullable = false)
+    private Integer duration;
+
     // Automatically set when the entity is persisted
     private LocalDateTime createdAt;
 
-//    @ManyToOne
-//    @JoinColumn(name = "course_id", nullable = false)
-//    private Course course;
+    private Integer numberOfQuestions;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
 //    @Column(nullable = false)
 //    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<Question> questions;
 
-    @ManyToMany
-    @JoinTable(name = "quiz_questions",
-            joinColumns = @JoinColumn(name = "quiz_id"),
-            inverseJoinColumns = @JoinColumn(name = "question_id"))
-    private List<Question> questions;
+//    @ManyToMany
+//    @JoinTable(name = "quiz_questions",
+//            joinColumns = @JoinColumn(name = "quiz_id"),
+//            inverseJoinColumns = @JoinColumn(name = "question_id"))
+//    private List<Question> questions;
 
     @Column(nullable = false)
     @OneToMany(mappedBy = "quiz")

@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.software.lms.dto.QuestionDTO;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "quiz_attempts")
@@ -28,11 +30,16 @@ public class QuizAttempt {
     private User user;
 
     @Column(nullable = false)
-    private int score;
+    private float score;
 
     @Column(nullable = false)
     private String feedback;
 
-    @Column(nullable = false)
-    private LocalDateTime attemptDate;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+
+    @OneToMany
+
+    private List<Question> answers;
+
 }
