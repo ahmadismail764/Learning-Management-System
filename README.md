@@ -1,7 +1,3 @@
-Here's a polished **GitHub README.md** file based on the new project description:
-
----
-
 # **Learning Management System (LMS)**
 
 A comprehensive **Java-based Learning Management System** (LMS) designed to manage and organize online courses, assessments, and performance tracking for students, instructors, and administrators. This web-based application leverages **Spring Boot**, **Spring Security**, and a relational database to deliver a feature-rich, scalable solution for online education.
