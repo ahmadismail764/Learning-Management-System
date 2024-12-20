@@ -23,6 +23,13 @@ public class Course {
     @Column(nullable = false)
     private Integer duration;
 
+    @Column(nullable = false , updatable = false)
+    private Date createdAt = new Date();
+
+    @Column(nullable = false)
+    private Date updatedAt;
+
+
     @ManyToMany
     @JoinTable(
             name = "course_instructor",
@@ -31,22 +38,16 @@ public class Course {
     )
     private List<User> instructors = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL )
     private List<Lesson> lessons = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
             name = "course_students",
-            joinColumns = @JoinColumn(name = "user_id"),
+            joinColumns = @JoinColumn(name = "student_id"),
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
-    private Set<User> studentEnrolledCourses = new HashSet<>();
-
-    @Column(nullable = false , updatable = false)
-    private Date createdAt = new Date();
-
-    @Column(nullable = false)
-    private Date updatedAt;
+        private List<User> studentEnrolledCourses = new ArrayList<>();
 
     @PreUpdate
     protected void onUpdate() {
@@ -68,7 +69,7 @@ public class Course {
 
     public void addEnrolledStudent(User student) {
         if (this.studentEnrolledCourses == null) {
-            this.studentEnrolledCourses = new HashSet<>();
+            this.studentEnrolledCourses = new ArrayList<>();
         }
         this.studentEnrolledCourses.add(student);
     }
@@ -135,12 +136,12 @@ public class Course {
         }
         this.lessons = lessons;
     }
-    public Set<User> getStudentEnrolledCourses() {
+    public List<User> getStudentEnrolledCourses() {
         return studentEnrolledCourses;
     }
-    public void setStudentEnrolledCourses(Set<User> studentEnrolledCourses) {
+    public void setStudentEnrolledCourses(List<User> studentEnrolledCourses) {
         if (this.studentEnrolledCourses == null) {
-            this.studentEnrolledCourses = new HashSet<>();
+            this.studentEnrolledCourses =  new ArrayList<>();;
         }
         this.studentEnrolledCourses = studentEnrolledCourses;
     }
