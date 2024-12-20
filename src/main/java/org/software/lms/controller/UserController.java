@@ -26,6 +26,13 @@
                 return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
             }
 
+            @GetMapping
+            @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
+            public ResponseEntity<List <UserDto>> getUserAll() {
+               List <UserDto> usersDto =  userService.getAllUsers();
+                return ResponseEntity.ok(usersDto);
+            }
+
             @GetMapping("/{id}")
             @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
             public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {

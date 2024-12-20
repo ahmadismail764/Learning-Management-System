@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,6 +81,20 @@ public class UserServiceImpl implements UserService {
                     return userDto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDto> getAllUsers() {
+       List <UserDto> usersDto = new ArrayList<>();
+       List<User> users = userRepository.findAll();
+       for (User user : users) {
+           UserDto userDto = new UserDto();
+           BeanUtils.copyProperties(user, userDto);
+           usersDto.add(userDto);
+       }
+
+        return usersDto;
+
     }
 
     @Override
