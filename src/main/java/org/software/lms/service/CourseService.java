@@ -13,7 +13,6 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
 
-    @Autowired
     public CourseService(CourseRepository courseRepository) {
         this.courseRepository = courseRepository;
     }
