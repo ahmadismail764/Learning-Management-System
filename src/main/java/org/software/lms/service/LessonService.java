@@ -12,7 +12,11 @@ import java.util.Optional;
 public class LessonService {
 
     @Autowired
-    private LessonRepository lessonRepository;
+    private final LessonRepository lessonRepository;
+
+    LessonService(LessonRepository lessonRepository) {
+        this.lessonRepository = lessonRepository;
+    }
 
     public List<Lesson> getAllLessons() {
         return lessonRepository.findAll();
@@ -29,4 +33,5 @@ public class LessonService {
     public void deleteLesson(Long id) {
         lessonRepository.deleteById(id);
     }
+    
 }

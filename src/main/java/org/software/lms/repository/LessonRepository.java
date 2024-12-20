@@ -13,6 +13,4 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     Optional<Lesson> findByOtp(String otp);
     List<Lesson> findByOtpExpirationTimeAfter(java.util.Date otpExpirationTime);
     Optional<Lesson> findById(Long id);
-
-
 }
