@@ -22,13 +22,13 @@ public interface QuizService {
 
     QuizAttemptDTO submitQuizAttempt(QuizAttemptDTO submissionDTO, Long studentId);
 
-    float calculateScore(List<QuestionDTO> answers);
-
-    List<QuizAttempt> getQuizAttemptsByQuiz(Long quizId);
-
-    List<Question> mapAnswers(List<QuestionDTO> answerDTOs);
-
-    QuizAttempt getQuizAttemptById(Long attemptId);
-
-    List<QuizAttempt> getQuizAttemptsByStudentAndQuiz(Long studentId, Long quizId);
+//    float calculateScore(List<QuestionDTO> answers);
+//
+//    List<QuizAttempt> getQuizAttemptsByQuiz(Long quizId);
+//
+//    List<Question> mapAnswers(List<QuestionDTO> answerDTOs);
+//
+//    QuizAttempt getQuizAttemptById(Long attemptId);
+//
+//    List<QuizAttempt> getQuizAttemptsByStudentAndQuiz(Long studentId, Long quizId);
 }

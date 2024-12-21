@@ -40,11 +40,11 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
 
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "user")
     private List<QuizAttempt> quizAttempts;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "instructor")
+    @ManyToMany(mappedBy = "instructors")
     private Set<Course> coursesTeaching = new HashSet<>();
 
     public Long getId() {

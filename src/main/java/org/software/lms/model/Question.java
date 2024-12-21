@@ -33,7 +33,7 @@ public class Question {
     private String selectedAnswer;
 
     @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "course_id")
     private Course course;
 
 //    @ManyToMany(mappedBy = "questions")

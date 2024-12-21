@@ -32,8 +32,8 @@ public class Course {
     @OneToMany(mappedBy = "course")
     private List<Quiz> quizzes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course")
-    private List<Assignment> assignments = new ArrayList<>();
+//    @OneToMany(mappedBy = "course")
+//    private List<Assignment> assignments = new ArrayList<>();
 
     @OneToMany(mappedBy = "course")
     private List<Question> questionBank = new ArrayList<>();

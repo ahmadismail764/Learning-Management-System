@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.software.lms.dto.QuestionDTO;
 import org.software.lms.dto.QuizAttemptDTO;
 import org.software.lms.dto.QuizDTO;
+import org.software.lms.dto.UserDto;
 import org.software.lms.exception.ResourceNotFoundException;
 import org.software.lms.model.*;
 import org.software.lms.repository.*;
@@ -15,10 +16,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
-public abstract class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
+public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
 
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
@@ -37,6 +39,17 @@ public abstract class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<
         this.courseRepository = courseRepository;
         this.quizAttemptRepository = quizAttemptRepository;
         this.userRepository = userRepository;
+    }
+
+    @Override
+    public QuizDTO getQuizById(Long quizId) {
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found with id: " + quizId));
+
+        QuizDTO quizDTO = new QuizDTO();
+        BeanUtils.copyProperties(quiz, quizDTO);
+
+        return quizDTO;
     }
 
     @Override
@@ -60,10 +73,13 @@ public abstract class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
 
-        List<Question> questionBank = questionRepository.findByCourseId(quiz.getCourse().getId());
-        //To solve this error we need to SOMEHOW get the questionBank from CourseEntity (From the CourseRepository) using the quizId XD
+        Course course = courseRepository.findByQuizzesId(quizId);
+        List<Question> questionBank = questionRepository.findByCourse(course);
 
-        if (questionBank.size() < quiz.getNumberOfQuestions()) { //getQuizById
+        QuizDTO quizDTO = new QuizDTO();
+        BeanUtils.copyProperties(quiz, quizDTO);
+
+        if (questionBank.size() < quizDTO.getNumberOfQuestions()) {
             throw new IllegalStateException("Not enough questions in the bank");
         }
 
@@ -117,7 +133,6 @@ public abstract class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<
 //                })
 //                .collect(Collectors.toList());
 //    }
-
 
 
 //    @Override
