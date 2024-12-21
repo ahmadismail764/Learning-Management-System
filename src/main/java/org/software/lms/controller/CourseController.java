@@ -1,9 +1,7 @@
 package org.software.lms.controller;
 
-import org.software.lms.dto.CourseDto;
 import org.software.lms.model.Course;
 import org.software.lms.service.CourseService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
