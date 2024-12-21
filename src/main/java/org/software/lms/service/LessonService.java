@@ -26,6 +26,10 @@ public class LessonService {
         return lessonRepository.findById(id);
     }
 
+    public Optional<Lesson> getLessonbyOtp(String otp) {
+        return lessonRepository.findByOtp(otp);
+    }
+
     public Lesson saveLesson(Lesson lesson) {
         return lessonRepository.save(lesson);
     }
