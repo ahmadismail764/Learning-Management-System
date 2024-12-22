@@ -29,17 +29,16 @@ public class QuizAttempt {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private float score;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private String feedback;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
     @OneToMany
-
     private List<Question> answers;
 
 }

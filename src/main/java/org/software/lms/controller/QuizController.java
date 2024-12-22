@@ -2,6 +2,7 @@ package org.software.lms.controller;
 
 import jakarta.validation.Valid;
 import org.software.lms.dto.*;
+import org.software.lms.exception.ResourceNotFoundException;
 import org.software.lms.model.Question;
 import org.software.lms.model.Quiz;
 import org.software.lms.model.QuizAttempt;
@@ -14,6 +15,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,15 +48,31 @@ public class QuizController {
         return new ResponseEntity<>(createdQuestions, HttpStatus.CREATED);
     }
 
+//    @PostMapping("/{quizId}/submit")
+//    @PreAuthorize("hasRole('STUDENT')")
+//    public ResponseEntity<QuizAttemptDTO> submitQuiz(
+//            @PathVariable Long quizId,
+//            @Valid @RequestBody QuizAttemptDTO submissionDTO,
+//            @AuthenticationPrincipal UserDetails userDetails) {
+//        Long studentId = ((UserDto) userDetails).getId();
+//        QuizAttemptDTO attempt = quizService.submitQuizAttempt(submissionDTO, studentId);
+//        return new ResponseEntity<>(attempt, HttpStatus.CREATED);
+//    }
+
     @PostMapping("/{quizId}/submit")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<QuizAttemptDTO> submitQuiz(
             @PathVariable Long quizId,
-            @Valid @RequestBody QuizAttemptDTO submissionDTO,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long studentId = ((UserDto) userDetails).getId();
-        QuizAttemptDTO attempt = quizService.submitQuizAttempt(submissionDTO, studentId);
-        return new ResponseEntity<>(attempt, HttpStatus.CREATED);
+            @Valid @RequestBody QuizAttemptDTO submissionDTO) {
+        // Validate time limit
+        QuizDTO quizDTO = quizService.getQuizById(quizId);
+        Duration timeSpent = Duration.between(submissionDTO.getStartTime(), submissionDTO.getEndTime());
+        if (timeSpent.toMinutes() > quizDTO.getDuration()) {
+            throw new ResourceNotFoundException("Time limit exceeded for this quiz");
+        }
+
+        QuizAttemptDTO attemptDTP = quizService.submitQuizAttempt(submissionDTO, submissionDTO.getStudentId());
+        return new ResponseEntity<>(attemptDTP, HttpStatus.CREATED);
     }
 
     @GetMapping("/{quizId}")

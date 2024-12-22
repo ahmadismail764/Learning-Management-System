@@ -77,23 +77,24 @@ public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
         Course course = courseRepository.findByQuizzesId(quizId);
         List<Question> questionBank = questionRepository.findByCourse(course);
 
-        QuizDTO quizDTO = new QuizDTO();
-        BeanUtils.copyProperties(quiz, quizDTO);
-
-        if (questionBank.size() < quizDTO.getNumberOfQuestions()) {
+        if (questionBank.size() < quiz.getNumberOfQuestions()) {
             throw new IllegalStateException("Not enough questions in the bank");
         }
 
         Collections.shuffle(questionBank);
-
         List<QuestionDTO> generatedQuestionsDTOs = new ArrayList<>();
-        BeanUtils.copyProperties(questionBank, generatedQuestionsDTOs);
+
+        for (int i = 0; i < quiz.getNumberOfQuestions(); i++) {
+            QuestionDTO questionDTO = new QuestionDTO();
+            BeanUtils.copyProperties(questionBank.get(i), questionDTO);
+            generatedQuestionsDTOs.add(questionDTO);
+        }
         return generatedQuestionsDTOs;
     }
 
     @Override
     public QuizAttemptDTO submitQuizAttempt(QuizAttemptDTO submissionDTO, Long studentId) {
-        Quiz quiz = quizRepository.findById(submissionDTO.getId())
+        Quiz quiz = quizRepository.findById(submissionDTO.getQuizId())
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
 
         User student = userRepository.findById(studentId)
