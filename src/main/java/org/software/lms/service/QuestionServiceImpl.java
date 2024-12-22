@@ -30,6 +30,7 @@ public class QuestionServiceImpl implements QuestionService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
+        questionDTO.setCourse(course);
         Question question = new Question();
         BeanUtils.copyProperties(questionDTO, question);
 
@@ -38,6 +39,7 @@ public class QuestionServiceImpl implements QuestionService {
         QuestionDTO savedQuestionDto = new QuestionDTO();
         BeanUtils.copyProperties(savedQuestion, savedQuestionDto);
 
+        course.addQuestionToBank(question);
 
         return savedQuestionDto;
     }

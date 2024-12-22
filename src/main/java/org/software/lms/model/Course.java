@@ -173,4 +173,11 @@ public class Course {
         this.id = id;
     }
 
+    public void addQuestionToBank(Question question) {
+        if (this.questionBank == null) {
+            this.questionBank = new ArrayList<>();
+        }
+        this.questionBank.add(question);
+    }
+
 }

@@ -11,8 +11,6 @@ import java.util.List;
 @Table(name = "quizzes")
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 public class Quiz {
 
     @Id
@@ -44,7 +42,7 @@ public class Quiz {
 //            inverseJoinColumns = @JoinColumn(name = "question_id"))
 //    private List<Question> questions;
 
-    @Column(nullable = false)
+    //    @Column(nullable = false)
     @OneToMany(mappedBy = "quiz")
     private List<QuizAttempt> quizAttempts;
 
@@ -53,4 +51,59 @@ public class Quiz {
         this.createdAt = LocalDateTime.now();
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Integer getNumberOfQuestions() {
+        return numberOfQuestions;
+    }
+
+    public void setNumberOfQuestions(Integer numberOfQuestions) {
+        this.numberOfQuestions = numberOfQuestions;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    public List<QuizAttempt> getQuizAttempts() {
+        return quizAttempts;
+    }
+
+    public void setQuizAttempts(List<QuizAttempt> quizAttempts) {
+        this.quizAttempts = quizAttempts;
+    }
 }

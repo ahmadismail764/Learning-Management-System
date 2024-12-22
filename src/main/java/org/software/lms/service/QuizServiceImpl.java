@@ -57,6 +57,7 @@ public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
+        quizDTO.setCourse(course);
         Quiz quiz = new Quiz();
         BeanUtils.copyProperties(quizDTO, quiz);
 

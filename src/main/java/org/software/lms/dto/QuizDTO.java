@@ -1,11 +1,13 @@
 package org.software.lms.dto;
 
+import org.software.lms.model.Course;
+
 public class QuizDTO {
     private Long id;
     private String title;
     private Integer duration;
     private Integer numberOfQuestions;
-    private Long courseId;
+    private Course course;
 
     public Long getId() {
         return id;
@@ -40,11 +42,11 @@ public class QuizDTO {
         this.numberOfQuestions = numberOfQuestions;
     }
 
-    public Long getCourseId() {
-        return courseId;
+    public Course getCourse() {
+        return course;
     }
 
-    public void setCourseId(Long courseId) {
-        this.courseId = courseId;
+    public void setCourse(Course course) {
+        this.course = course;
     }
 }
