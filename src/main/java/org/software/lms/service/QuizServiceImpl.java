@@ -157,6 +157,8 @@ public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
     public List<Quiz> getQuizzesByCourse(Long courseId) {
         return quizRepository.findByCourseId(courseId);
     }
+
+
 //    @Override
 //    public Quiz updateQuiz(Long quizId, Quiz quizDetails) {
 //        Quiz quiz = quizRepository.findById(quizId)
@@ -169,6 +171,10 @@ public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
     @Override
     public void deleteQuiz(Long quizId) {
         quizRepository.deleteById(quizId);
+    }
+    public Optional<Quiz> getQuizByCourseAndQuizId(Long courseId, Long quizId) {
+        // نستخدم الدالة الجديدة في QuizRepository
+        return quizRepository.findByCourseIdAndId(courseId, quizId);
     }
 
 }
