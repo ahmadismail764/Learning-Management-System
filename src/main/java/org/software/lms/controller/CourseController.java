@@ -2,6 +2,7 @@ package org.software.lms.controller;
 
 import org.software.lms.dto.CourseDto;
 import org.software.lms.model.Course;
+import org.software.lms.model.User;
 import org.software.lms.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -114,6 +115,11 @@ public class CourseController {
     public ResponseEntity<Void> deleteLessonFromCourse(@PathVariable Long id, @PathVariable Long lessonId) {
         courseService.deleteLessonFromCourse(id, lessonId);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/{id}/studentEnrolled")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    public List<User> findStudentEnrolledInCourse(@PathVariable Long id) {
+        return courseService.findStudentEnrolledInCourse(id);
     }
 }
 
