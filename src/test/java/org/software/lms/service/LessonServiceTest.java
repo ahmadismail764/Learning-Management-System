@@ -33,9 +33,6 @@ public class LessonServiceTest {
     @Mock
     private LessonResourceRepository lessonResourceRepository;
 
-    @InjectMocks
-    private LessonService lessonService;
-
     private Lesson lesson;
 
     @BeforeEach
