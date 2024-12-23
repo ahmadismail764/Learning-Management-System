@@ -104,4 +104,9 @@ public class CourseController {
         courseService.deleteLessonFromCourse(id, lessonId);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/{id}/studentEnrolled")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    public List<User> findStudentEnrolledInCourse(@PathVariable Long id) {
+        return courseService.findStudentEnrolledInCourse(id);
+    }
 }
