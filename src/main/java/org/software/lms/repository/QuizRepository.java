@@ -5,10 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
 public interface QuizRepository extends JpaRepository<Quiz,Long> {
-    // You can add custom query methods if needed, e.g. find by course, type, etc.
     List<Quiz> findByCourseId(Long courseId);
+    @Override
+    Optional<Quiz> findById(Long quizId);
+    Optional<Quiz> findByCourseIdAndId(Long courseId, Long quizId);
+
 }

@@ -117,6 +117,21 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
+    public Course updateInstructorsToCourse(Long courseId, List<Long> instructorIds) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        List<User> instructors = userRepository.findAllById(instructorIds);
+
+        course.setInstructors(new ArrayList<>(instructors));
+        return courseRepository.save(course);
+
+    }
+    public Course updateStudentsOfCourse(Long courseId, List<Long> studentIds) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        List<User> students = userRepository.findAllById(studentIds);
+
+        course.setStudentEnrolledCourses(new ArrayList<>(students));
+        return courseRepository.save(course);
+    }
     public Course updateLessonsOfCourse(Long courseId, List<Long> lessonIds) {
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
         List<Lesson> lessons = lessonRepository.findAllById(lessonIds);
@@ -145,7 +160,7 @@ public class CourseService {
         course.getLessons().remove(lesson);
         courseRepository.save(course);
     }
-        public List<User> findStudentEnrolledInCourse(Long id) {
+    public List<User> findStudentEnrolledInCourse(Long id) {
         Course course = courseRepository.findById(id).orElseThrow(() -> new RuntimeException("Course not found"));
         return course.getStudentEnrolledCourses();
     }

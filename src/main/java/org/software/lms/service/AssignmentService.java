@@ -138,10 +138,14 @@ public class AssignmentService {
     }
 
     @PreAuthorize("hasAnyRole('INSTRUCTOR', 'STUDENT')")
-     public List<Submission> getStudentSubmissions(Long courseId, Long studentId) {
+    public List<Submission> getStudentSubmissions(Long courseId, Long studentId) {
         if (!courseRepository.existsById(courseId)) {
-           throw new ResourceNotFoundException("Course not found");
+            throw new ResourceNotFoundException("Course not found");
         }
         return submissionRepository.findByAssignmentCourseIdAndStudentId(courseId, studentId);
     }
+
+
+
+
 }

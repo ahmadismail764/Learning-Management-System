@@ -198,5 +198,16 @@
             }
             this.questionBank.add(question);
         }
-    
+
+        public List<Quiz> getQuizzes() {
+            return quizzes;
+        }
+
+        public void setQuizzes(List<Quiz> quizzes) {
+            if (this.quizzes == null) {
+                this.quizzes = new ArrayList<>();
+            }
+            this.quizzes = quizzes;
+        }
+
     }
