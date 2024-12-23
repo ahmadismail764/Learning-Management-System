@@ -28,6 +28,9 @@ public class Submission {
     @Column(nullable = false)
     private LocalDateTime submittedAt = LocalDateTime.now();
 
+//    @Enumerated(EnumType.STRING)
+//    private SubmissionStatus status;
+
     public Long getId() {
         return id;
     }
