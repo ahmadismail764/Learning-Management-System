@@ -59,19 +59,28 @@ public class QuizController {
 //        return new ResponseEntity<>(attempt, HttpStatus.CREATED);
 //    }
 
+//    @PostMapping("/{quizId}/submit")
+//    @PreAuthorize("hasRole('STUDENT')")
+//    public ResponseEntity<QuizAttemptDTO> submitQuiz(
+//            @PathVariable Long quizId,
+//            @Valid @RequestBody QuizAttemptDTO submissionDTO) {
+//        // Validate time limit
+//        QuizDTO quizDTO = quizService.getQuizById(quizId);
+//        Duration timeSpent = Duration.between(submissionDTO.getStartTime(), submissionDTO.getEndTime());
+//        if (timeSpent.toMinutes() > quizDTO.getDuration()) {
+//            throw new ResourceNotFoundException("Time limit exceeded for this quiz");
+//        }
+//
+//        QuizAttemptDTO attemptDTP = quizService.submitQuizAttempt(submissionDTO, submissionDTO.getStudentId());
+//        return new ResponseEntity<>(attemptDTP, HttpStatus.CREATED);
+//    }
+
     @PostMapping("/{quizId}/submit")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<QuizAttemptDTO> submitQuiz(
             @PathVariable Long quizId,
             @Valid @RequestBody QuizAttemptDTO submissionDTO) {
-        // Validate time limit
-        QuizDTO quizDTO = quizService.getQuizById(quizId);
-        Duration timeSpent = Duration.between(submissionDTO.getStartTime(), submissionDTO.getEndTime());
-        if (timeSpent.toMinutes() > quizDTO.getDuration()) {
-            throw new ResourceNotFoundException("Time limit exceeded for this quiz");
-        }
-
-        QuizAttemptDTO attemptDTP = quizService.submitQuizAttempt(submissionDTO, submissionDTO.getStudentId());
+        QuizAttemptDTO attemptDTP = quizService.submitQuizAttempt(submissionDTO, quizId);
         return new ResponseEntity<>(attemptDTP, HttpStatus.CREATED);
     }
 

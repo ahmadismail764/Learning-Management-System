@@ -14,8 +14,6 @@ import java.util.List;
 @Table(name = "quiz_attempts")
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 public class QuizAttempt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,19 +24,96 @@ public class QuizAttempt {
     private Quiz quiz;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "student_id", nullable = false)
+    private User student;
 
-//    @Column(nullable = false)
-    private float score;
-
-//    @Column(nullable = false)
+    private Integer score;
     private String feedback;
-
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Integer timeSpentMinutes;
+    String status;
 
     @OneToMany
-    private List<Question> answers;
+    private List<Question> answerQuestions;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Quiz getQuiz() {
+        return quiz;
+    }
+
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
+    }
+
+    public User getStudent() {
+        return student;
+    }
+
+    public void setStudent(User student) {
+        this.student = student;
+    }
+
+    public Integer getScore() {
+        return score;
+    }
+
+    public void setScore(Integer score) {
+        this.score = score;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Integer getTimeSpentMinutes() {
+        return timeSpentMinutes;
+    }
+
+    public void setTimeSpentMinutes(Integer timeSpentMinutes) {
+        this.timeSpentMinutes = timeSpentMinutes;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public List<Question> getAnswerQuestions() {
+        return answerQuestions;
+    }
+
+    public void setAnswerQuestions(List<Question> answerQuestions) {
+        this.answerQuestions = answerQuestions;
+    }
 }

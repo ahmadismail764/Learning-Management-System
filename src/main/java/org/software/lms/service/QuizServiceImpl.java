@@ -12,6 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,47 +94,83 @@ public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
     }
 
     @Override
-    public QuizAttemptDTO submitQuizAttempt(QuizAttemptDTO submissionDTO, Long studentId) {
-        Quiz quiz = quizRepository.findById(submissionDTO.getQuizId())
+    public QuizAttemptDTO submitQuizAttempt(QuizAttemptDTO submissionDTO, Long quizId) {
+        Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
 
-        User student = userRepository.findById(studentId)
+        // Validate time limit
+        Duration timeSpent = Duration.between(submissionDTO.getStartTime(), submissionDTO.getEndTime());
+        if (timeSpent.toMinutes() > quiz.getDuration()) {
+            throw new ResourceNotFoundException("Time limit exceeded for this quiz");
+        }
+
+        User student = userRepository.findById(submissionDTO.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
+        List<QuestionDTO> studentAnswers = submissionDTO.getAnsweredQuestions();
+        int score = 0;
+
+        List<Question> questions = new ArrayList<>();
+        for (QuestionDTO answerDTO : studentAnswers) {
+            // Fetch the original question from the database
+            Question question = questionRepository.findById(answerDTO.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Question not found with id: " + answerDTO.getId()));
+
+            // Only set the selected answer, don't modify the original question
+            question.setSelectedAnswer(answerDTO.getSelectedAnswer());
+
+            // Compare answers for scoring
+            if (answerDTO.getSelectedAnswer() != null &&
+                    answerDTO.getSelectedAnswer().equals(question.getCorrectAnswer())) {
+                score++;
+            }
+
+            questions.add(question);
+        }
+
         QuizAttempt attempt = new QuizAttempt();
-        BeanUtils.copyProperties(submissionDTO, attempt);
+        attempt.setStudent(student);
+        attempt.setStartTime(submissionDTO.getStartTime());
+        attempt.setEndTime(submissionDTO.getEndTime());
+        attempt.setTimeSpentMinutes((int) timeSpent.toMinutes());
+        attempt.setQuiz(quiz);
+        attempt .setScore(score);
+        attempt.setAnswerQuestions(questions);
+        if(score >= Math.ceil(quiz.getNumberOfQuestions() / 2) )
+            attempt.setStatus("PASSED");
+        else
+            attempt.setStatus("FAILED");
+        StringBuilder feedBack = new StringBuilder("The Student has " + attempt.getStatus() + ". The Score is: " +
+                score + " out of " + quiz.getNumberOfQuestions());
+        attempt.setFeedback(feedBack.toString());
 
         QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
 
         QuizAttemptDTO savedAttemptDto = new QuizAttemptDTO();
-        BeanUtils.copyProperties(savedAttempt, savedAttemptDto);
+
+        savedAttemptDto.setFeedback(savedAttempt.getFeedback());
 
         return savedAttemptDto;
     }
 
-//    public float calculateScore(List<QuestionDTO> answers) {
-//        float correctAnswers = 0;
-//        for (QuestionDTO answer : answers) {
-//            Question question = questionRepository.findById(answer.getId())
-//                    .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
-//
-//            if (question.getCorrectAnswer().equals(answer.getSelectedAnswer())) {
-//                correctAnswers++;
-//            }
-//        }
-//        return (correctAnswers / answers.size()) * 100;
-//    }
 
-//    private List<Question> mapAnswers(List<QuestionDTO> answerDTOs) {
-//        return answerDTOs.stream()
-//                .map(dto -> {
-//                    Question answer = new Question();
-//                    answer.getId(questionRepository.findById(dto.getId())
-//                            .orElseThrow(() -> new ResourceNotFoundException("Question not found")));
-//                    answer.setSelectedAnswer(dto.getSelectedAnswer());
-//                    return answer;
-//                })
-//                .collect(Collectors.toList());
+//    @Override
+//    public QuizAttemptDTO submitQuizAttempt(QuizAttemptDTO submissionDTO, Long studentId) {
+//        Quiz quiz = quizRepository.findById(submissionDTO.getQuizId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
+//
+//        User student = userRepository.findById(studentId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+//
+//        QuizAttempt attempt = new QuizAttempt();
+//        BeanUtils.copyProperties(submissionDTO, attempt);
+//
+//        QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
+//
+//        QuizAttemptDTO savedAttemptDto = new QuizAttemptDTO();
+//        BeanUtils.copyProperties(savedAttempt, savedAttemptDto);
+//
+//        return savedAttemptDto;
 //    }
 
 

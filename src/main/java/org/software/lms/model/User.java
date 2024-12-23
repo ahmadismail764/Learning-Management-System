@@ -40,7 +40,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "student")
     private List<QuizAttempt> quizAttempts;
 
     @JsonIgnore

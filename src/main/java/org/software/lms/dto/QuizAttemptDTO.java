@@ -7,11 +7,12 @@ public class QuizAttemptDTO {
     private Long id;
     private Long quizId;
     private Long studentId;
-    private float score;
+    private Integer score;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private List<QuestionDTO> answers;
+    private List<QuestionDTO> answeredQuestions;
     int timeSpentMinutes;
+    private String feedback;
     String status;
 
     public Long getId() {
@@ -38,11 +39,11 @@ public class QuizAttemptDTO {
         this.studentId = studentId;
     }
 
-    public float getScore() {
+    public Integer getScore() {
         return score;
     }
 
-    public void setScore(float score) {
+    public void setScore(Integer score) {
         this.score = score;
     }
 
@@ -62,27 +63,36 @@ public class QuizAttemptDTO {
         this.endTime = endTime;
     }
 
-    public List<QuestionDTO> getAnswers() {
-        return answers;
+    public List<QuestionDTO> getAnsweredQuestions() {
+        return answeredQuestions;
     }
 
-    public void setAnswers(List<QuestionDTO> answers) {
-        this.answers = answers;
-    }
-
-    public void setTimeSpentMinutes(int timeSpentMinutes) {
-        this.timeSpentMinutes = timeSpentMinutes;
+    public void setAnsweredQuestions(List<QuestionDTO> answeredQuestions) {
+        this.answeredQuestions = answeredQuestions;
     }
 
     public int getTimeSpentMinutes() {
         return timeSpentMinutes;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setTimeSpentMinutes(int timeSpentMinutes) {
+        this.timeSpentMinutes = timeSpentMinutes;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
     }
 
     public String getStatus() {
         return status;
     }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
+
