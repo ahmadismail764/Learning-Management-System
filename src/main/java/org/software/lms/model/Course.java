@@ -1,5 +1,6 @@
     package org.software.lms.model;
     
+    import com.fasterxml.jackson.annotation.JsonManagedReference;
     import jakarta.persistence.*;
     import lombok.*;
     
