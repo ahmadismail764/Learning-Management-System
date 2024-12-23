@@ -11,6 +11,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
@@ -44,30 +46,37 @@ public class QuestionServiceImpl implements QuestionService {
         return savedQuestionDto;
     }
 
-//
-//    @Override
-//    public Question updateQuestion(Long questionId, Question questionDetails) {
-//        Question question = questionRepository.findById(questionId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Question not found with id " + questionId));
-//
-//        question.setText(questionDetails.getText());
-////        question.setAnswerOptions(questionDetails.getAnswerOptions());
-//        return questionRepository.save(question);
-//    }
-//
-//    @Override
-//    public Question getQuestionById(Long questionId) {
-//        return questionRepository.findById(questionId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Question not found with id " + questionId));
-//    }
-//
-//    @Override
-//    public List<Question> getQuestionsByCourse(Long courseId) {
-//        return questionRepository.findByCourseId(courseId);
-//    }
-//
-//    @Override
-//    public void deleteQuestion(Long questionId) {
-//        questionRepository.deleteById(questionId);
-//    }
+    @Override
+    public Question updateQuestion(Long questionId, Question questionDetails) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found with id " + questionId));
+
+        question.setText(questionDetails.getText());
+//        question.setAnswerOptions(questionDetails.getAnswerOptions());
+        return questionRepository.save(question);
+    }
+
+    @Override
+    public QuestionDTO getQuestionById(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Question not found with id " + questionId));
+
+        QuestionDTO questionDTO = new QuestionDTO();
+        BeanUtils.copyProperties(question, questionDTO);
+        return questionDTO;
+    }
+
+    @Override
+    public void deleteQuestion(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found with id " + questionId));
+        questionRepository.deleteById(questionId);
+    }
+
+
+    @Override
+    public List<Question> getQuestionsByCourse(Long courseId) {
+        return questionRepository.findByCourseId(courseId);
+    }
+
 }

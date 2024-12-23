@@ -153,27 +153,10 @@ public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
         return savedAttemptDto;
     }
 
-
-//    @Override
-//    public QuizAttemptDTO submitQuizAttempt(QuizAttemptDTO submissionDTO, Long studentId) {
-//        Quiz quiz = quizRepository.findById(submissionDTO.getQuizId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
-//
-//        User student = userRepository.findById(studentId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-//
-//        QuizAttempt attempt = new QuizAttempt();
-//        BeanUtils.copyProperties(submissionDTO, attempt);
-//
-//        QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
-//
-//        QuizAttemptDTO savedAttemptDto = new QuizAttemptDTO();
-//        BeanUtils.copyProperties(savedAttempt, savedAttemptDto);
-//
-//        return savedAttemptDto;
-//    }
-
-
+    @Override
+    public List<Quiz> getQuizzesByCourse(Long courseId) {
+        return quizRepository.findByCourseId(courseId);
+    }
 //    @Override
 //    public Quiz updateQuiz(Long quizId, Quiz quizDetails) {
 //        Quiz quiz = quizRepository.findById(quizId)
@@ -182,20 +165,10 @@ public class QuizServiceImpl implements QuizService {//<<<<<<<<<<<<<<<<<<<<<
 //        quiz.setDuration(quizDetails.getDuration());
 //        return quizRepository.save(quiz);
 //    }
-//
-//    @Override
-//    public Quiz getQuizById(Long quizId) {
-//        return quizRepository.findById(quizId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found with id " + quizId));
-//    }
-//
-//    @Override
-//    public List<Quiz> getQuizzesByCourse(Long courseId) {
-//        return quizRepository.findByCourseId(courseId);
-//    }
-//
-//    @Override
-//    public void deleteQuiz(Long quizId) {
-//        quizRepository.deleteById(quizId);
-//    }
+
+    @Override
+    public void deleteQuiz(Long quizId) {
+        quizRepository.deleteById(quizId);
+    }
+
 }

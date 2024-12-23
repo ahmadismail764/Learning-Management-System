@@ -36,27 +36,32 @@ public class QuestionController {
     }
 
 
-//    @PutMapping("/{questionId}")
-//    public ResponseEntity<Question> updateQuestion(@PathVariable Long questionId, @RequestBody Question question) {
-//        Question updatedQuestion = questionService.updateQuestion(questionId, question);
-//        return ResponseEntity.ok(updatedQuestion);
-//    }
-//
-//    @GetMapping("/{questionId}")
-//    public ResponseEntity<Question> getQuestionById(@PathVariable Long questionId) {
-//        Question question = questionService.getQuestionById(questionId);
-//        return ResponseEntity.ok(question);
-//    }
-//
-//    @GetMapping("/course/{courseId}")
-//    public ResponseEntity<List<Question>> getQuestionsByCourse(@PathVariable Long courseId) {
-//        List<Question> questions = questionService.getQuestionsByCourse(courseId);
-//        return ResponseEntity.ok(questions);
-//    }
-//
-//    @DeleteMapping("/{questionId}")
-//    public ResponseEntity<Void> deleteQuestion(@PathVariable Long questionId) {
-//        questionService.deleteQuestion(questionId);
-//        return ResponseEntity.noContent().build();
-//    }
+    @PutMapping("/courses/{courseId}/{questionId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<Question> updateQuestion(@PathVariable Long questionId, @RequestBody Question question) {
+        Question updatedQuestion = questionService.updateQuestion(questionId, question);
+        return ResponseEntity.ok(updatedQuestion);
+    }
+
+    @GetMapping("/{questionId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<QuestionDTO> getQuestionById(@PathVariable Long questionId) {
+        QuestionDTO question = questionService.getQuestionById(questionId);
+        return ResponseEntity.ok(question);
+    }
+
+    @DeleteMapping("/{questionId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<Void> deleteQuestion(@PathVariable Long questionId) {
+        questionService.deleteQuestion(questionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/course/{courseId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<List<Question>> getQuestionsByCourse(@PathVariable Long courseId) { //To get the question Bank if Course
+        List<Question> questions = questionService.getQuestionsByCourse(courseId);
+        return new ResponseEntity<>(questions, HttpStatus.CREATED);
+    }
+
 }

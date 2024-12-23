@@ -13,8 +13,9 @@ public interface QuizService {
     QuizDTO getQuizById(Long quizId);
 
 //    Quiz updateQuiz(Long quizId, Quiz quiz);
-//    List<Quiz> getQuizzesByCourse(Long courseId);
-//    void deleteQuiz(Long quizId);
+    List<Quiz> getQuizzesByCourse(Long courseId);
+
+    void deleteQuiz(Long quizId);
 
     QuizDTO createQuiz(QuizDTO quizDTO, Long courseId);
 
@@ -22,11 +23,8 @@ public interface QuizService {
 
     QuizAttemptDTO submitQuizAttempt(QuizAttemptDTO submissionDTO, Long studentId);
 
-//    float calculateScore(List<QuestionDTO> answers);
 //
 //    List<QuizAttempt> getQuizAttemptsByQuiz(Long quizId);
-//
-//    List<Question> mapAnswers(List<QuestionDTO> answerDTOs);
 //
 //    QuizAttempt getQuizAttemptById(Long attemptId);
 //

@@ -26,6 +26,7 @@ public class Question {
     @ElementCollection
     private List<String> options = new ArrayList<>();
 
+    @Column(nullable = false)
     private String correctAnswer;
 
     private String selectedAnswer;
