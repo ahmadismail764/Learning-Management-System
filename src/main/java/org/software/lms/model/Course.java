@@ -29,6 +29,15 @@ public class Course {
     @Column(nullable = false)
     private Date updatedAt;
 
+    @OneToMany(mappedBy = "course")
+    private List<Quiz> quizzes = new ArrayList<>();
+
+//    @OneToMany(mappedBy = "course")
+//    private List<Assignment> assignments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course")
+    private List<Question> questionBank = new ArrayList<>();
+
 
     @ManyToMany
     @JoinTable(
@@ -162,6 +171,13 @@ public class Course {
     }
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void addQuestionToBank(Question question) {
+        if (this.questionBank == null) {
+            this.questionBank = new ArrayList<>();
+        }
+        this.questionBank.add(question);
     }
 
 }
