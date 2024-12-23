@@ -1,5 +1,6 @@
 package org.software.lms.service;
 
+import org.software.lms.dto.ProfileUpdateDto;
 import org.software.lms.dto.UserDto;
 import org.software.lms.model.Role;
 import org.software.lms.model.User;
@@ -15,4 +16,6 @@ public interface UserService {
     UserDto updateUser(Long id, UserDto userDto);
     void deleteUser(Long id);
     boolean existsByEmail(String email);
+    UserDto viewProfile(Long userId);
+    UserDto updateProfile(Long userId, ProfileUpdateDto profileUpdateDto);
 }

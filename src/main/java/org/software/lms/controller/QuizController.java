@@ -60,7 +60,8 @@ public class QuizController {
     @GetMapping("/{quizId}")
     public ResponseEntity<QuizDTO> getQuizById(@PathVariable Long quizId) {
         QuizDTO quizDTO = quizService.getQuizById(quizId);
-        return ResponseEntity.ok(quizDTO);
+//        return ResponseEntity.ok(quizDTO);
+        return new ResponseEntity<>(quizDTO, HttpStatus.CREATED);
     }
 
 //    @PutMapping("/{quizId}")
