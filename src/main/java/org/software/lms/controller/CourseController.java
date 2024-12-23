@@ -1,6 +1,7 @@
 package org.software.lms.controller;
 
 import org.software.lms.model.Course;
+import org.software.lms.model.Lesson;
 import org.software.lms.model.User;
 import org.software.lms.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,8 +115,8 @@ public class CourseController {
          List<User> enrolledStudents = findStudentEnrolledInCourse(CourseId);
          for (User stud : enrolledStudents) {
              Long StudId = stud.getId();
-             String title = "New Instructor";
-             String message = "Instructor x has been added to this course";
+             String title = "New Lesson";
+             String message = "Lessons with id \""+lessonIds+"\" have been Added.";
              notifControl.createNotification(StudId, CourseId, title, message);
          }
         return ResponseEntity.ok(course);
@@ -128,8 +129,8 @@ public class CourseController {
          List<User> enrolledStudents = findStudentEnrolledInCourse(CourseId);
          for (User stud : enrolledStudents) {
              Long StudId = stud.getId();
-             String title = "New Instructor";
-             String message = "Instructor x has been added to this course";
+             String title = "Update Lesson";
+             String message = "Lessons with id \""+lessonIds+"\" have been Deleted";
              notifControl.createNotification(StudId, CourseId, title, message);
          }
         return ResponseEntity.ok(course);
@@ -142,8 +143,8 @@ public class CourseController {
          List<User> enrolledStudents = findStudentEnrolledInCourse(CourseId);
          for (User stud : enrolledStudents) {
              Long StudId = stud.getId();
-             String title = "New Instructor";
-             String message = "Instructor x has been added to this course";
+             String title = "Delete Instructor";
+             String message = "Instructor with id \""+instructorId+"\" has been Deleted.";
              notifControl.createNotification(StudId, CourseId, title, message);
          }
         return ResponseEntity.noContent().build();
@@ -164,9 +165,9 @@ public class CourseController {
          List<User> enrolledStudents = findStudentEnrolledInCourse(CourseId);
          for (User stud : enrolledStudents) {
              Long StudId = stud.getId();
-             String title = "New Instructor";
-             String message = "Instructor x has been added to this course";
-             notifControl.createNotification(CourseId, CourseId, title, message);
+             String title = "Delete Lesson";
+             String message = "Lesson with id \""+lessonId+"\"  has been Deleted.";
+             notifControl.createNotification(StudId, CourseId, title, message);
          }
         return ResponseEntity.noContent().build();
     }
