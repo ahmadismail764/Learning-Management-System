@@ -15,6 +15,8 @@ public class Lesson {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+
     @Column(nullable = false)
     private String title;
 
@@ -28,13 +30,19 @@ public class Lesson {
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
     private List<LessonResource> lessonResources = new ArrayList<>();
 
-    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
-    private List<LessonAttendance> attendanceRecords = new ArrayList<>();
+//    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+//    private List<LessonAttendance> attendanceRecords = new ArrayList<>();
 
-    private String currentOTP;
+    //private String currentOTP;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    //@Temporal(TemporalType.TIMESTAMP)
     private Date otpGeneratedAt;
+
+    @Column(nullable = false)
+    private Integer duration;
+
+    @Column(nullable = false)
+    private Integer orderIndex;
 
     @Column(nullable = false)
     private Date createdAt = new Date();
@@ -85,6 +93,7 @@ public class Lesson {
         resource.setLesson(this);
     }
 
+
     public void removeResource(LessonResource resource) {
         if (this.resources != null) {
             this.resources.remove(resource);
@@ -132,14 +141,30 @@ public class Lesson {
         this.lessonResources = lessonResources;
     }
 
-    public List<LessonAttendance> getAttendanceRecords() {
-        return attendanceRecords;
+//    public List<LessonAttendance> getAttendanceRecords() {
+//        return attendanceRecords;
+//    }
+
+//    public void setAttendanceRecords(List<LessonAttendance> attendanceRecords) {
+//        this.attendanceRecords = attendanceRecords;
+//    }
+
+    public Integer getDuration() {
+        return duration;
     }
 
-    public void setAttendanceRecords(List<LessonAttendance> attendanceRecords) {
-        this.attendanceRecords = attendanceRecords;
+    public void setDuration(Integer duration) {
+        this.duration = duration;
     }
 
+    public Integer getOrderIndex() {
+        return orderIndex;
+    }
+
+    public void setOrderIndex(Integer orderIndex) {
+        this.orderIndex = orderIndex;
+    }
+/*
     public String getCurrentOTP() {
         return currentOTP;
     }
@@ -159,7 +184,7 @@ public class Lesson {
     public Date getCreatedAt() {
         return createdAt;
     }
-
+*/
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }

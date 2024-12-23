@@ -30,9 +30,6 @@ public class CourseService {
     }
 
     public Course createCourse(Course course) {
-        if(courseRepository.findById(course.getId()).isPresent()){
-            throw new IllegalArgumentException("Course with the given title already exists!");
-        };
         return courseRepository.save(course);
     }
 

@@ -76,9 +76,9 @@ public class CourseController {
     }
 
 
-    @PostMapping("/{id}/lessons")
+    @PostMapping("/{id}/assign-lessons")  // Changed path to be more specific
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
-    public ResponseEntity<Course> addLessonsToCourse(@PathVariable Long id, @RequestBody List<Long> lessonIds) {
+    public ResponseEntity<Course> assignLessonsToCourse(@PathVariable Long id, @RequestBody List<Long> lessonIds) {
         return ResponseEntity.ok(courseService.addLessonsToCourse(id, lessonIds));
     }
     @PutMapping("/{id}/lessons")

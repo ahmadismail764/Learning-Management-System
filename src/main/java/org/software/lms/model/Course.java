@@ -28,16 +28,16 @@
         private Date createdAt = new Date();
     
         @Column(nullable = false)
-        private Date updatedAt;
+        private Date updatedAt = new Date(); ;
 
-        @OneToMany(mappedBy = "course")
+        @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
         private List<Quiz> quizzes = new ArrayList<>();
 
         // In Course.java, add:
         @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
         private List<Assignment> assignments = new ArrayList<>();
 
-        @OneToMany(mappedBy = "course")
+        @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
         private List<Question> questionBank = new ArrayList<>();
 
         // Add helper methods
