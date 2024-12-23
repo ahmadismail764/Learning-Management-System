@@ -17,5 +17,10 @@ public class PerformanceTrackingController {
         double percentage = performanceTrackingService.getSubmissionPercentage(courseId, assignmentId);
         return ResponseEntity.ok(percentage);
     }
+    @GetMapping("/Total-submission/{courseId}/{assignmentId}")
+    public ResponseEntity<Long> getTotalSubmission(@PathVariable Long courseId, @PathVariable Long assignmentId) {
+        Long percentage = performanceTrackingService.getTotalSubmissions(courseId, assignmentId);
+        return ResponseEntity.ok(percentage);
+    }
 
 }
