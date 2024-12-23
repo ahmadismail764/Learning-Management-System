@@ -26,11 +26,12 @@ public class PerformanceTrackingService {
         long totalStudents = course.getStudentEnrolledCourses().size();
 
         Optional<Assignment> assignment = assignmentRepository.findByCourseIdAndId(courseId,assignmentId);
-
-        long submittedCount = assignment.get().getSubmissions().size();
+        long submittedCount;
+        if (assignment.isPresent()) submittedCount = assignment.get().getSubmissions().size();
+        else submittedCount = 0;
 
         if (totalStudents == 0) {
-            return 0.0; // في حالة لم يكن هناك طلاب مسجلين
+            return 0.0;
         }
 
         double percentage = ((double) submittedCount / totalStudents) * 100;
@@ -38,7 +39,7 @@ public class PerformanceTrackingService {
     }
     public long getTotalSubmissions(Long courseId, Long assignmentId) {
         Optional<Assignment> assignment = assignmentRepository.findByCourseIdAndId(courseId,assignmentId);
-        return  assignment.get().getSubmissions().size();
+        return (assignment.isPresent())?  assignment.get().getSubmissions().size() : 0;
     }
 
 }
