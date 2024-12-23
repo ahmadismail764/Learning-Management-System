@@ -23,4 +23,14 @@ public class PerformanceTrackingController {
         return ResponseEntity.ok(percentage);
     }
 
+    @GetMapping("/getPassRate/{courseId}/{quizId")
+    public ResponseEntity<Double> getPassRate(@PathVariable Long courseId , @PathVariable Long quizId) {
+        Double percentage = performanceTrackingService.getPassRate(courseId,quizId);
+        return ResponseEntity.ok(percentage);
+    }
+    @GetMapping("/getNumberOfStudentTakeQuizzes/{courseId}/{quizId}")
+    public ResponseEntity<Long> getNumberOfStudentTakeQuizzes(@PathVariable Long courseId , @PathVariable Long quizId) {
+        Long totalNumber = performanceTrackingService.getNumberOfStudentTakeQuizzes(courseId,quizId);
+        return ResponseEntity.ok(totalNumber);
+    }
 }
