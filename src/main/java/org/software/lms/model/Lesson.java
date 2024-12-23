@@ -25,28 +25,32 @@ public class Lesson {
     @JoinColumn(name = "course_id",nullable = false)
     private Course course;
 
-    @Column(nullable = false , unique = true )
-    private String otp;
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    private List<LessonResource> lessonResources = new ArrayList<>();
+
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    private List<LessonAttendance> attendanceRecords = new ArrayList<>();
+
+    private String currentOTP;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date otpGeneratedAt;
 
     @Column(nullable = false)
-    private Date otpExpirationTime;
-
-    @Column(nullable = false , updatable = false)
     private Date createdAt = new Date();
 
     @Column(nullable = false)
-    private Date updatedAt;
+    private Date updatedAt = new Date();
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = new Date();
+        updatedAt = new Date();
+    }
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = updatedAt != null ? updatedAt : new Date();
-
-    }
-    @PrePersist
-    protected void onPersist() {
-        if (updatedAt == null) {
-            updatedAt = new Date();
-        }
+        updatedAt = new Date();
     }
 
     @ManyToMany
@@ -88,85 +92,99 @@ public class Lesson {
         }
     }
 
-    public boolean isOtpValid() {
-        return new Date().before(otpExpirationTime);
-    }
-
-    public void updateOtp(String newOtp, Date newExpirationTime) {
-        this.otp = newOtp;
-        this.otpExpirationTime = newExpirationTime;
-    }
-
-//    public Lesson title(String title) {
-//        this.title = title;
-//        return this;
-//    }
-//
-//    public Lesson description(String description) {
-//        this.description = description;
-//        return this;
-//    }
-//
-//    public Lesson course(Course course) {
-//        this.course = course;
-//        return this;
-//    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Lesson)) return false;
-        Lesson lesson = (Lesson) o;
-        return id != null && id.equals(lesson.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Lesson{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", otp='" + otp + '\'' +
-                ", otpExpirationTime=" + otpExpirationTime +
-                '}';
-    }
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
+
     public String getTitle() {
         return title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
+
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
+
     public Course getCourse() {
         return course;
     }
+
     public void setCourse(Course course) {
         this.course = course;
     }
-    public String getOtp() {
-        return otp;
-    }
-    public void setOtp(String otp) {
-        this.otp = otp;
-    }
-    public Date getOtpExpirationTime() {
-        return otpExpirationTime;
+
+    public List<LessonResource> getLessonResources() {
+        return lessonResources;
     }
 
+    public void setLessonResources(List<LessonResource> lessonResources) {
+        this.lessonResources = lessonResources;
+    }
+
+    public List<LessonAttendance> getAttendanceRecords() {
+        return attendanceRecords;
+    }
+
+    public void setAttendanceRecords(List<LessonAttendance> attendanceRecords) {
+        this.attendanceRecords = attendanceRecords;
+    }
+
+    public String getCurrentOTP() {
+        return currentOTP;
+    }
+
+    public void setCurrentOTP(String currentOTP) {
+        this.currentOTP = currentOTP;
+    }
+
+    public Date getOtpGeneratedAt() {
+        return otpGeneratedAt;
+    }
+
+    public void setOtpGeneratedAt(Date otpGeneratedAt) {
+        this.otpGeneratedAt = otpGeneratedAt;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<User> getAttendances() {
+        return attendances;
+    }
+
+    public void setAttendances(List<User> attendances) {
+        this.attendances = attendances;
+    }
+
+    public List<LessonResource> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<LessonResource> resources) {
+        this.resources = resources;
+    }
 }
