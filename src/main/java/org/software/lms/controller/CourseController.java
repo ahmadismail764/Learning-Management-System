@@ -1,6 +1,5 @@
 package org.software.lms.controller;
 
-import org.software.lms.dto.CourseDto;
 import org.software.lms.model.Course;
 import org.software.lms.model.User;
 import org.software.lms.service.CourseService;
@@ -110,4 +109,5 @@ public class CourseController {
     public List<User> findStudentEnrolledInCourse(@PathVariable Long id) {
         return courseService.findStudentEnrolledInCourse(id);
     }
+
 }
