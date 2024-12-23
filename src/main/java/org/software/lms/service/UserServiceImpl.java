@@ -1,5 +1,6 @@
 package org.software.lms.service;
 
+import org.software.lms.dto.ProfileUpdateDto;
 import org.software.lms.dto.UserDto;
 import org.software.lms.exception.ResourceNotFoundException;
 import org.software.lms.model.User;
@@ -125,5 +126,45 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public UserDto viewProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(user, userDto);
+        return userDto;
+    }
+
+    @Override
+    public UserDto updateProfile(Long userId, ProfileUpdateDto profileUpdateDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // Validate email if it's being updated
+        if (profileUpdateDto.getEmail() != null &&
+                !profileUpdateDto.getEmail().equals(user.getEmail()) &&
+                userRepository.existsByEmail(profileUpdateDto.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        // Update fields if they are not null
+        if (profileUpdateDto.getFirstName() != null) {
+            user.setFirstName(profileUpdateDto.getFirstName());
+        }
+        if (profileUpdateDto.getLastName() != null) {
+            user.setLastName(profileUpdateDto.getLastName());
+        }
+        if (profileUpdateDto.getEmail() != null) {
+            user.setEmail(profileUpdateDto.getEmail());
+        }
+
+        User updatedUser = userRepository.save(user);
+        UserDto updatedUserDto = new UserDto();
+        BeanUtils.copyProperties(updatedUser, updatedUserDto);
+
+        return updatedUserDto;
     }
 }

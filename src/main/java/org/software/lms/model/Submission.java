@@ -1,32 +1,32 @@
 package org.software.lms.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "submissions") // Specify table name
-
+@Table(name = "submissions")
 public class Submission {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "assignment_id", nullable = false) // Maps to assignmentId column in the database
-    private Long assignmentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignment_id", nullable = false)
+    private Assignment assignment;
 
-    @Column(name = "student_id", nullable = false) // Maps to studentId column in the database
+    @Column(name = "student_id", nullable = false)
     private Long studentId;
 
-    @Column(name = "file_path", nullable = false) // Path to the uploaded file
+    @Column(nullable = false)
     private String filePath;
 
-    @Column(name = "grade") // Grade for the submission
     private Double grade;
 
-    @Column(name = "feedback") // Feedback from the instructor
+    @Column(length = 1000)
     private String feedback;
+
+    @Column(nullable = false)
+    private LocalDateTime submittedAt = LocalDateTime.now();
 
     public Long getId() {
         return id;
@@ -36,12 +36,12 @@ public class Submission {
         this.id = id;
     }
 
-    public Long getAssignmentId() {
-        return assignmentId;
+    public Assignment getAssignment() {
+        return assignment;
     }
 
-    public void setAssignmentId(Long assignmentId) {
-        this.assignmentId = assignmentId;
+    public void setAssignment(Assignment assignment) {
+        this.assignment = assignment;
     }
 
     public Long getStudentId() {
@@ -75,4 +75,15 @@ public class Submission {
     public void setFeedback(String feedback) {
         this.feedback = feedback;
     }
+
+    public LocalDateTime getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(LocalDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public Submission() {}
+
 }
