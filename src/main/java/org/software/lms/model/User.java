@@ -1,10 +1,14 @@
 package org.software.lms.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -35,6 +39,13 @@ public class User {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
+
+    @OneToMany(mappedBy = "student")
+    private List<QuizAttempt> quizAttempts;
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "instructors")
+    private Set<Course> coursesTeaching = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -90,6 +101,13 @@ public class User {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+    public List<QuizAttempt> getQuizAttempts() {
+        return quizAttempts;
+    }
+
+    public void setQuizAttempts(List<QuizAttempt> quizAttempts) {
+        this.quizAttempts = quizAttempts;
     }
 }
 
