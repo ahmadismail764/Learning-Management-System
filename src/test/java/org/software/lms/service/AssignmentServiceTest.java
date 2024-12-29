@@ -1,252 +1,297 @@
 package org.software.lms.service;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.software.lms.model.*;
-import org.software.lms.repository.*;
-import org.software.lms.service.*;
-import org.software.lms.exception.*;
-import java.util.*;
+import org.mockito.MockitoAnnotations;
+import org.software.lms.exception.ResourceNotFoundException;
+import org.software.lms.model.Assignment;
+import org.software.lms.model.Course;
+import org.software.lms.model.Submission;
+import org.software.lms.model.User;
+import org.software.lms.repository.AssignmentRepository;
+import org.software.lms.repository.CourseRepository;
+import org.software.lms.repository.SubmissionRepository;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ExtendWith(MockitoExtension.class)
 class AssignmentServiceTest {
-
-    @InjectMocks
-    private AssignmentService assignmentService;
 
     @Mock
     private AssignmentRepository assignmentRepository;
 
     @Mock
+    private SubmissionRepository submissionRepository;
+
+    @Mock
     private CourseRepository courseRepository;
 
-    // @Mock
-    // private SubmissionRepository submissionRepository;
+    @InjectMocks
+    private AssignmentService assignmentService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        // Manually inject repositories
+        ReflectionTestUtils.setField(assignmentService, "assignmentRepository", assignmentRepository);
+        ReflectionTestUtils.setField(assignmentService, "submissionRepository", submissionRepository);
+        ReflectionTestUtils.setField(assignmentService, "courseRepository", courseRepository);
+    }
 
     @Test
     void testCreateAssignment() {
-        // Mock course repository
+        // Prepare test data
         Long courseId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        Course course = new Course();
+        course.setId(courseId);
 
-        // Mock assignment repository
         Assignment assignment = new Assignment();
         assignment.setTitle("Test Assignment");
+        assignment.setDescription("Test Description");
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
 
-        // Call the method
+        // Test
         Assignment result = assignmentService.createAssignment(courseId, assignment);
 
-        // Verify interactions and assertions
+        // Verify
         assertNotNull(result);
         assertEquals("Test Assignment", result.getTitle());
-        verify(courseRepository, times(1)).findById(courseId);
+        assertEquals(course, result.getCourse());
         verify(assignmentRepository, times(1)).save(any(Assignment.class));
     }
-        @Test
+
+    @Test
+    void testCreateAssignment_CourseNotFound() {
+        Long courseId = 1L;
+        Assignment assignment = new Assignment();
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            assignmentService.createAssignment(courseId, assignment);
+        });
+    }
+
+    @Test
     void testGetAssignment() {
-        // Mock course and assignment
         Long courseId = 1L;
         Long assignmentId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        Assignment mockAssignment = new Assignment();
-        mockAssignment.setId(assignmentId);
-        mockAssignment.setCourse(mockCourse);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(mockAssignment));
+        Assignment assignment = new Assignment();
+        assignment.setId(assignmentId);
 
-        // Call the method
+        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId))
+                .thenReturn(Optional.of(assignment));
+
         Assignment result = assignmentService.getAssignment(courseId, assignmentId);
 
-        // Verify interactions and assertions
         assertNotNull(result);
         assertEquals(assignmentId, result.getId());
-        verify(courseRepository).findById(courseId);
-        verify(assignmentRepository).findByCourseIdAndId(courseId, assignmentId);
     }
 
     @Test
-    void testGetAssignment_CourseNotFound() {
-        // Mock assignment
+    void testGetAssignment_NotFound() {
         Long courseId = 1L;
         Long assignmentId = 1L;
-        Assignment mockAssignment = new Assignment();
-        mockAssignment.setId(assignmentId);
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(mockAssignment));
 
-        // Course not found
-        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId))
+                .thenReturn(Optional.empty());
 
-        // Expect exception
-        assertThrows(ResourceNotFoundException.class, () -> assignmentService.getAssignment(courseId, assignmentId));
-        verify(assignmentRepository, never()).findByCourseIdAndId(courseId, assignmentId);
+        assertThrows(ResourceNotFoundException.class, () -> {
+            assignmentService.getAssignment(courseId, assignmentId);
+        });
     }
 
-    @Test
-    void testGetAssignment_AssignmentNotFound() {
-        // Mock course
-        Long courseId = 1L;
-        Long assignmentId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
-
-        // Assignment not found
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.empty());
-
-        // Expect exception
-        assertThrows(ResourceNotFoundException.class, () -> assignmentService.getAssignment(courseId, assignmentId));
-    }
     @Test
     void testUpdateAssignment() {
-        // Mock course and assignment
         Long courseId = 1L;
         Long assignmentId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        Assignment mockAssignment = new Assignment();
-        mockAssignment.setId(assignmentId);
-        mockAssignment.setCourse(mockCourse);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(mockAssignment));
+        Assignment existingAssignment = new Assignment();
+        existingAssignment.setId(assignmentId);
 
-        // Update details
-        Assignment updateDetails = new Assignment();
-        updateDetails.setTitle("Updated Title");
-        updateDetails.setDescription("Updated Description");
+        Assignment updatedDetails = new Assignment();
+        updatedDetails.setTitle("Updated Title");
+        updatedDetails.setDescription("Updated Description");
+        updatedDetails.setDueDate(LocalDateTime.now().plusDays(7));
 
-        // Call the method
-        Assignment updatedAssignment = assignmentService.updateAssignment(courseId, assignmentId, updateDetails);
+        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId))
+                .thenReturn(Optional.of(existingAssignment));
+        when(assignmentRepository.save(any(Assignment.class))).thenReturn(updatedDetails);
 
-        // Verify interactions and assertions
-        assertNotNull(updatedAssignment);
-        assertEquals("Updated Title", updatedAssignment.getTitle());
-        assertEquals("Updated Description", updatedAssignment.getDescription());
-        verify(assignmentRepository).findByCourseIdAndId(courseId, assignmentId);
-        verify(assignmentRepository).save(updatedAssignment);
+        Assignment result = assignmentService.updateAssignment(courseId, assignmentId, updatedDetails);
+
+        assertNotNull(result);
+        assertEquals("Updated Title", result.getTitle());
+        verify(assignmentRepository, times(1)).save(any(Assignment.class));
     }
 
     @Test
-    void testUpdateAssignment_CourseNotFound() {
-        // Mock assignment
+    void testSubmitAssignment() {
         Long courseId = 1L;
         Long assignmentId = 1L;
-        Assignment mockAssignment = new Assignment();
-        mockAssignment.setId(assignmentId);
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(mockAssignment));
+        Long studentId = 1L;
+        String filePath = "path/to/file";
 
-        // Course not found
-        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+        Course course = new Course();
+        User student = new User();
+        student.setId(studentId);
+        course.setStudentEnrolledCourses(Arrays.asList(student));
 
-        // Expect exception
-        assertThrows(ResourceNotFoundException.class, () -> assignmentService.updateAssignment(courseId, assignmentId, new Assignment()));
-        verify(assignmentRepository, never()).save(any());
+        Assignment assignment = new Assignment();
+        assignment.setCourse(course);
+        assignment.setDueDate(LocalDateTime.now().plusDays(1));
+
+        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId))
+                .thenReturn(Optional.of(assignment));
+        when(submissionRepository.existsByAssignmentIdAndStudentId(assignmentId, studentId))
+                .thenReturn(false);
+        when(submissionRepository.save(any(Submission.class)))
+                .thenReturn(new Submission());
+
+        Submission result = assignmentService.submitAssignment(courseId, assignmentId, studentId, filePath);
+
+        assertNotNull(result);
+        verify(submissionRepository, times(1)).save(any(Submission.class));
     }
 
     @Test
-    void testUpdateAssignment_AssignmentNotFound() {
-        // Mock course
+    void testSubmitAssignment_PastDueDate() {
         Long courseId = 1L;
         Long assignmentId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        Long studentId = 1L;
+        String filePath = "path/to/file";
 
-        // Assignment not found
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.empty());
+        Course course = new Course();
+        User student = new User();
+        student.setId(studentId);
+        course.setStudentEnrolledCourses(Arrays.asList(student));
 
-        // Expect exception
-        assertThrows(ResourceNotFoundException.class, () -> assignmentService.updateAssignment(courseId, assignmentId, new Assignment()));
-        verify(assignmentRepository, never()).save(any());
+        Assignment assignment = new Assignment();
+        assignment.setCourse(course);
+        assignment.setDueDate(LocalDateTime.now().minusDays(1));
+
+        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId))
+                .thenReturn(Optional.of(assignment));
+
+        assertThrows(IllegalStateException.class, () -> {
+            assignmentService.submitAssignment(courseId, assignmentId, studentId, filePath);
+        });
     }
 
     @Test
-    void testDeleteAssignment() {
-        // Mock course and assignment
+    void testGradeSubmission() {
         Long courseId = 1L;
-        Long assignmentId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        Assignment mockAssignment = new Assignment();
-        mockAssignment.setId(assignmentId);
-        mockAssignment.setCourse(mockCourse);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(mockAssignment));
+        Long submissionId = 1L;
+        Double grade = 85.0;
+        String feedback = "Good work";
 
-        // Call the method
-        assignmentService.deleteAssignment(courseId, assignmentId);
+        Course course = new Course();
+        course.setId(courseId);
 
-        // Verify interactions
-        verify(assignmentRepository).findByCourseIdAndId(courseId, assignmentId);
-        verify(assignmentRepository).delete(mockAssignment);
+        Assignment assignment = new Assignment();
+        assignment.setCourse(course);
+
+        Submission submission = new Submission();
+        submission.setAssignment(assignment);
+
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(submissionRepository.save(any(Submission.class))).thenReturn(submission);
+
+        Submission result = assignmentService.gradeSubmission(courseId, submissionId, grade, feedback);
+
+        assertNotNull(result);
+        verify(submissionRepository, times(1)).save(any(Submission.class));
     }
 
     @Test
-    void testDeleteAssignment_CourseNotFound() {
-        // Mock assignment
+    void testGradeSubmission_InvalidGrade() {
         Long courseId = 1L;
-        Long assignmentId = 1L;
-        Assignment mockAssignment = new Assignment();
-        mockAssignment.setId(assignmentId);
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(mockAssignment));
+        Long submissionId = 1L;
+        Double invalidGrade = 101.0;
+        String feedback = "Good work";
 
-        // Course not found
-        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+        Course course = new Course();
+        course.setId(courseId);
 
-        // Expect exception
-        assertThrows(ResourceNotFoundException.class, () -> assignmentService.deleteAssignment(courseId, assignmentId));
-        verify(assignmentRepository, never()).delete(any());
+        Assignment assignment = new Assignment();
+        assignment.setCourse(course);
+
+        Submission submission = new Submission();
+        submission.setAssignment(assignment);
+
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            assignmentService.gradeSubmission(courseId, submissionId, invalidGrade, feedback);
+        });
     }
 
     @Test
-    void testDeleteAssignment_AssignmentNotFound() {
-        // Mock course
+    void testGetSubmissionsByAssignment() {
         Long courseId = 1L;
         Long assignmentId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        List<Submission> submissions = Arrays.asList(new Submission(), new Submission());
 
-        // Assignment not found
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.empty());
+        Assignment assignment = new Assignment();
+        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId))
+                .thenReturn(Optional.of(assignment));
+        when(submissionRepository.findByAssignmentId(assignmentId)).thenReturn(submissions);
 
-        // Expect exception
-        assertThrows(ResourceNotFoundException.class, () -> assignmentService.deleteAssignment(courseId, assignmentId));
-        verify(assignmentRepository, never()).delete(any());
+        List<Submission> result = assignmentService.getSubmissionsByAssignment(courseId, assignmentId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(submissionRepository, times(1)).findByAssignmentId(assignmentId);
     }
 
     @Test
-    void testGetAssignmentsByCourse() {
-        // Mock course
+    void testGetStudentSubmissions() {
         Long courseId = 1L;
-        Course mockCourse = new Course();
-        mockCourse.setId(courseId);
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        Long studentId = 1L;
+        List<Submission> submissions = Arrays.asList(new Submission(), new Submission());
 
-        // Mock assignments
-        List<Assignment> mockAssignments = List.of(
-                new Assignment(),
-                new Assignment()
-        );
-        when(assignmentRepository.findByCourseId(courseId)).thenReturn(mockAssignments);
+        when(courseRepository.existsById(courseId)).thenReturn(true);
+        when(submissionRepository.findByAssignmentCourseIdAndStudentId(courseId, studentId))
+                .thenReturn(submissions);
 
-        // Call the method
-        List<Assignment> assignments = assignmentService.getAssignmentsByCourse(courseId);
+        List<Submission> result = assignmentService.getStudentSubmissions(courseId, studentId);
 
-        // Verify interactions and assertions
-        assertEquals(2, assignments.size());
-        verify(courseRepository).findById(courseId);
-        verify(assignmentRepository).findByCourseId(courseId);
+        assertNotNull(result);
+        assertEquals(2, result.size());
     }
 
+    @Test
+    void testDeleteSubmission() {
+        Long courseId = 1L;
+        Long assignmentId = 1L;
+        Long submissionId = 1L;
+
+        Course course = new Course();
+        course.setId(courseId);
+
+        Assignment assignment = new Assignment();
+        assignment.setId(assignmentId);
+        assignment.setCourse(course);
+
+        Submission submission = new Submission();
+        submission.setAssignment(assignment);
+
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+
+        assignmentService.deleteSubmission(courseId, assignmentId, submissionId);
+
+        verify(submissionRepository, times(1)).delete(submission);
+    }
 }
