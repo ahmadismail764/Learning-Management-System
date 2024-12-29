@@ -38,6 +38,12 @@ public class AssignmentService {
     }
 
     @PreAuthorize("hasAnyRole('INSTRUCTOR', 'STUDENT')")
+    public Submission getSubmission(Long submissionId) {
+        return submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+    }
+
+    @PreAuthorize("hasAnyRole('INSTRUCTOR', 'STUDENT')")
     public Assignment getAssignment(Long courseId, Long assignmentId) {
         return assignmentRepository.findByCourseIdAndId(courseId, assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found"));
@@ -117,9 +123,14 @@ public class AssignmentService {
     }
 
     @PreAuthorize("hasRole('STUDENT')")
-    public Submission updateSubmission(Long courseId, Long assignmentId, Long studentId, String newFilePath) {
-        Submission submission = submissionRepository.findByAssignmentIdAndStudentId(assignmentId, studentId)
+    public Submission updateSubmission(Long courseId, Long assignmentId, Long submissionId, String newFilePath) {
+        Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+
+        if (!submission.getAssignment().getId().equals(assignmentId) ||
+                !submission.getAssignment().getCourse().getId().equals(courseId)) {
+            throw new IllegalStateException("Submission does not belong to the specified course or assignment");
+        }
 
         Assignment assignment = submission.getAssignment();
         if (assignment.getDueDate().isBefore(LocalDateTime.now())) {
@@ -130,6 +141,21 @@ public class AssignmentService {
         submission.setSubmittedAt(LocalDateTime.now());
         return submissionRepository.save(submission);
     }
+
+
+    @PreAuthorize("hasRole('STUDENT')")
+    public void deleteSubmission(Long courseId, Long assignmentId, Long submissionId) {
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+
+        if (!submission.getAssignment().getId().equals(assignmentId) ||
+                !submission.getAssignment().getCourse().getId().equals(courseId)) {
+            throw new IllegalStateException("Submission does not belong to the specified course or assignment");
+        }
+
+        submissionRepository.delete(submission);
+    }
+
 
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public List<Submission> getSubmissionsByAssignment(Long courseId, Long assignmentId) {

@@ -1,4 +1,5 @@
 package org.software.lms.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,17 +26,20 @@ public class Lesson {
 
     @ManyToOne
     @JoinColumn(name = "course_id",nullable = false)
+    @JsonIgnore
     private Course course;
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<LessonResource> lessonResources = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
-//    private List<LessonAttendance> attendanceRecords = new ArrayList<>();
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<LessonAttendance> attendanceRecords = new ArrayList<>();
 
-    //private String currentOTP;
+    private String currentOTP;
 
-    //@Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date otpGeneratedAt;
 
     @Column(nullable = false)
@@ -141,13 +145,13 @@ public class Lesson {
         this.lessonResources = lessonResources;
     }
 
-//    public List<LessonAttendance> getAttendanceRecords() {
-//        return attendanceRecords;
-//    }
+    public List<LessonAttendance> getAttendanceRecords() {
+        return attendanceRecords;
+    }
 
-//    public void setAttendanceRecords(List<LessonAttendance> attendanceRecords) {
-//        this.attendanceRecords = attendanceRecords;
-//    }
+    public void setAttendanceRecords(List<LessonAttendance> attendanceRecords) {
+        this.attendanceRecords = attendanceRecords;
+    }
 
     public Integer getDuration() {
         return duration;
@@ -164,7 +168,7 @@ public class Lesson {
     public void setOrderIndex(Integer orderIndex) {
         this.orderIndex = orderIndex;
     }
-/*
+
     public String getCurrentOTP() {
         return currentOTP;
     }
@@ -184,7 +188,7 @@ public class Lesson {
     public Date getCreatedAt() {
         return createdAt;
     }
-*/
+
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }

@@ -1,5 +1,6 @@
 package org.software.lms.controller;
 
+import org.software.lms.dto.GradeSubmissionRequest;
 import org.software.lms.model.Assignment;
 import org.software.lms.model.Submission;
 import org.software.lms.service.AssignmentService;
@@ -16,6 +17,9 @@ public class AssignmentController {
 
     @Autowired
     private AssignmentService assignmentService;
+
+    @Autowired
+    private NotificationController notifControl;
 
     @PostMapping
     public ResponseEntity<Assignment> createAssignment(
@@ -53,34 +57,48 @@ public class AssignmentController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{assignmentId}/submit")
-    public ResponseEntity<Submission> submitAssignment(
-            @PathVariable Long courseId,
-            @PathVariable Long assignmentId,
-            @RequestParam Long studentId,
-            @RequestParam String filePath) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(assignmentService.submitAssignment(courseId, assignmentId, studentId, filePath));
-    }
 
-    @PutMapping("/{assignmentId}/submissions")
+
+    @PutMapping("/{assignmentId}/submissions/{submissionId}")
     public ResponseEntity<Submission> updateSubmission(
             @PathVariable Long courseId,
             @PathVariable Long assignmentId,
-            @RequestParam Long studentId,
+            @PathVariable Long submissionId,
             @RequestParam String filePath) {
         return ResponseEntity.ok(
-                assignmentService.updateSubmission(courseId, assignmentId, studentId, filePath));
+                assignmentService.updateSubmission(courseId, assignmentId, submissionId, filePath));
     }
+
+    @DeleteMapping("/{assignmentId}/submissions/{submissionId}")
+    public ResponseEntity<Void> deleteSubmission(
+            @PathVariable Long courseId,
+            @PathVariable Long assignmentId,
+            @PathVariable Long submissionId) {
+        assignmentService.deleteSubmission(courseId, assignmentId, submissionId);
+        return ResponseEntity.noContent().build();
+    }
+
 
     @PostMapping("/{assignmentId}/submissions/{submissionId}/grade")
     public ResponseEntity<Submission> gradeSubmission(
             @PathVariable Long courseId,
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
-            @RequestParam Double grade,
-            @RequestParam String feedback) {
-        return ResponseEntity.ok(assignmentService.gradeSubmission(courseId, submissionId, grade, feedback));
+            @RequestBody GradeSubmissionRequest gradeRequest) {
+
+        Submission submission = assignmentService.gradeSubmission(
+                courseId,
+                submissionId,
+                gradeRequest.getGrade(),
+                gradeRequest.getFeedback()
+        );
+
+        Long StudId = submission.getStudentId();
+        String title = submission.getAssignment().getTitle() + " graded.";
+        String message = "Your grade is " + gradeRequest.getGrade();
+        notifControl.createNotification(StudId, courseId, title, message);
+
+        return ResponseEntity.ok(submission);
     }
 
     @GetMapping("/{assignmentId}/submissions")

@@ -1,5 +1,7 @@
 package org.software.lms.service;
 
+import jakarta.transaction.Transactional;
+import org.software.lms.exception.ResourceNotFoundException;
 import org.software.lms.model.Course;
 import org.software.lms.model.Lesson;
 import org.software.lms.model.Role;
@@ -8,6 +10,8 @@ import org.software.lms.repository.CourseRepository;
 import org.software.lms.repository.LessonRepository;
 import org.software.lms.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,7 +33,27 @@ public class CourseService {
         this.courseRepository = courseRepository;
     }
 
+    @Transactional
     public Course createCourse(Course course) {
+        // Get the currently authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User instructor = userRepository.findByEmail(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
+
+        // Initialize the instructors list if it's null
+        if (course.getInstructors() == null) {
+            course.setInstructors(new ArrayList<>());
+        }
+
+        // Add the current instructor to the course's instructors list
+        course.getInstructors().add(instructor);
+
+        // Set creation date
+        course.setCreatedAt(new Date());
+        course.setUpdatedAt(new Date());
+
         return courseRepository.save(course);
     }
 
@@ -117,28 +141,9 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
-    public Course updateInstructorsToCourse(Long courseId, List<Long> instructorIds) {
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
-        List<User> instructors = userRepository.findAllById(instructorIds);
 
-        course.setInstructors(new ArrayList<>(instructors));
-        return courseRepository.save(course);
 
-    }
-    public Course updateStudentsOfCourse(Long courseId, List<Long> studentIds) {
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
-        List<User> students = userRepository.findAllById(studentIds);
 
-        course.setStudentEnrolledCourses(new ArrayList<>(students));
-        return courseRepository.save(course);
-    }
-    public Course updateLessonsOfCourse(Long courseId, List<Long> lessonIds) {
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
-        List<Lesson> lessons = lessonRepository.findAllById(lessonIds);
-
-        course.setLessons(new ArrayList<>(lessons));
-        return courseRepository.save(course);
-    }
     public void deleteInstructorFromCourse(Long courseId, Long instructorId) {
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
         User instructor = userRepository.findById(instructorId).orElseThrow(() -> new RuntimeException("Instructor not found"));
@@ -153,13 +158,7 @@ public class CourseService {
         course.getStudentEnrolledCourses().remove(student);
         courseRepository.save(course);
     }
-    public void deleteLessonFromCourse(Long courseId, Long lessonId) {
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
-        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new RuntimeException("Lesson not found"));
 
-        course.getLessons().remove(lesson);
-        courseRepository.save(course);
-    }
     public List<User> findStudentEnrolledInCourse(Long id) {
         Course course = courseRepository.findById(id).orElseThrow(() -> new RuntimeException("Course not found"));
         return course.getStudentEnrolledCourses();
