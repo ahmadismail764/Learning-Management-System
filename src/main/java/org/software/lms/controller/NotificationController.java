@@ -1,5 +1,6 @@
 package org.software.lms.controller;
 
+import org.software.lms.dto.NotificationDTO;
 import org.software.lms.model.*;
 import org.software.lms.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,21 +25,18 @@ public class NotificationController {
         return ResponseEntity.ok(notification);
     }
 
-    // Get all notifications for a user
     @GetMapping("/{userId}/all")
-    public ResponseEntity<List<Notification>> findByUserId(@PathVariable Long userId) {
-        List<Notification> notifications = notificationService.findByUserId(userId);
+    public ResponseEntity<List<NotificationDTO>> findByUserId(@PathVariable Long userId) {
+        List<NotificationDTO> notifications = notificationService.findByUserId(userId);
         return ResponseEntity.ok(notifications);
     }
 
-    // Get unread notifications for a user
     @GetMapping("/{userId}/unread")
-    public ResponseEntity<List<Notification>> findByUserIdAndIsReadFalse(@PathVariable Long userId) {
-        List<Notification> notifications = notificationService.findByUserIdAndIsReadFalse(userId);
+    public ResponseEntity<List<NotificationDTO>> findByUserIdAndIsReadFalse(@PathVariable Long userId) {
+        List<NotificationDTO> notifications = notificationService.findByUserIdAndIsReadFalse(userId);
         return ResponseEntity.ok(notifications);
     }
 
-    // Mark a notification as read
     @PutMapping("/{notificationId}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
         notificationService.markAsRead(notificationId);

@@ -7,8 +7,7 @@ public class QuizDTO {
     private String title;
     private Integer duration;
     private Integer numberOfQuestions;
-    private Course course;
-
+    private Long courseId;
     public Long getId() {
         return id;
     }
@@ -42,11 +41,12 @@ public class QuizDTO {
         this.numberOfQuestions = numberOfQuestions;
     }
 
-    public Course getCourse() {
-        return course;
+
+    public Long getCourseId() {
+        return courseId;
     }
 
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
     }
 }

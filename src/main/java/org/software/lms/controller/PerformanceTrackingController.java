@@ -3,34 +3,46 @@ package org.software.lms.controller;
 import org.software.lms.service.PerformanceTrackingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/courses/performance")
+@RequestMapping("/api/courses/{courseId}")
 public class PerformanceTrackingController {
 
     @Autowired
     private PerformanceTrackingService performanceTrackingService;
 
-    @GetMapping("/submission-percentage/{courseId}/{assignmentId}")
-    public ResponseEntity<Double> getSubmissionPercentage(@PathVariable Long courseId, @PathVariable Long assignmentId) {
-        double percentage = performanceTrackingService.getSubmissionPercentage(courseId, assignmentId);
-        return ResponseEntity.ok(percentage);
-    }
-    @GetMapping("/Total-submission/{courseId}/{assignmentId}")
-    public ResponseEntity<Long> getTotalSubmission(@PathVariable Long courseId, @PathVariable Long assignmentId) {
-        Long percentage = performanceTrackingService.getTotalSubmissions(courseId, assignmentId);
-        return ResponseEntity.ok(percentage);
+    @GetMapping("/quizzes/{quizId}/performance")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    public ResponseEntity<Map<String, Object>> getQuizPerformance(
+            @PathVariable Long courseId,
+            @PathVariable Long quizId) {
+        return ResponseEntity.ok(performanceTrackingService.getQuizPerformance(courseId, quizId));
     }
 
-    @GetMapping("/getPassRate/{courseId}/{quizId}")
-    public ResponseEntity<Double> getPassRate(@PathVariable Long courseId , @PathVariable Long quizId) {
-        Double percentage = performanceTrackingService.getPassRate(courseId,quizId);
-        return ResponseEntity.ok(percentage);
+    @GetMapping("/assignments/{assignmentId}/performance")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    public ResponseEntity<Map<String, Object>> getAssignmentPerformance(
+            @PathVariable Long courseId,
+            @PathVariable Long assignmentId) {
+        return ResponseEntity.ok(performanceTrackingService.getAssignmentPerformance(courseId, assignmentId));
     }
-    @GetMapping("/getNumberOfStudentTakeQuizzes/{courseId}/{quizId}")
-    public ResponseEntity<Long> getNumberOfStudentTakeQuizzes(@PathVariable Long courseId , @PathVariable Long quizId) {
-        Long totalNumber = performanceTrackingService.getNumberOfStudentTakeQuizzes(courseId,quizId);
-        return ResponseEntity.ok(totalNumber);
+
+    @GetMapping("/students/{studentId}/attendance")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    public ResponseEntity<Map<String, Object>> getAttendancePerformance(
+            @PathVariable Long courseId,
+            @PathVariable Long studentId) {
+        return ResponseEntity.ok(performanceTrackingService.getAttendancePerformance(courseId, studentId));
+    }
+
+    @GetMapping("/students/{studentId}/performance")
+    public ResponseEntity<Map<String, Object>> getStudentPerformance(
+            @PathVariable Long courseId,
+            @PathVariable Long studentId) {
+        return ResponseEntity.ok(performanceTrackingService.getStudentPerformance(courseId, studentId));
     }
 }

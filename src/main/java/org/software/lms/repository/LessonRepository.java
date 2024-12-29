@@ -8,6 +8,6 @@ import java.util.*;
 
 @Repository
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
-    List<Lesson> findByCourse_Id(Long courseId);
-    boolean existsById(Long lessonId);
+    List<Lesson> findByCourse_IdOrderByOrderIndexAsc(Long courseId);
+    Optional<Lesson> findByIdAndCourse_Id(Long id, Long courseId);
 }

@@ -1,5 +1,6 @@
     package org.software.lms.model;
     
+    import com.fasterxml.jackson.annotation.JsonIgnore;
     import com.fasterxml.jackson.annotation.JsonManagedReference;
     import jakarta.persistence.*;
     import lombok.*;
@@ -28,16 +29,18 @@
         private Date createdAt = new Date();
     
         @Column(nullable = false)
-        private Date updatedAt;
+        private Date updatedAt = new Date(); ;
 
-        @OneToMany(mappedBy = "course")
+        @JsonIgnore
+        @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
         private List<Quiz> quizzes = new ArrayList<>();
 
         // In Course.java, add:
         @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
         private List<Assignment> assignments = new ArrayList<>();
 
-        @OneToMany(mappedBy = "course")
+        @JsonIgnore
+        @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
         private List<Question> questionBank = new ArrayList<>();
 
         // Add helper methods
@@ -49,7 +52,7 @@
             assignment.setCourse(this);
         }
 
-        // Add getter and setter
+
         public List<Assignment> getAssignments() {
             return assignments;
         }
@@ -192,11 +195,30 @@
         public void setId(Long id) {
             this.id = id;
         }
+        public List<Question> getQuestionBank() {
+            if (this.questionBank == null) {
+                this.questionBank = new ArrayList<>();
+            }
+            return questionBank;
+        }
+
+        public void setQuestionBank(List<Question> questionBank) {
+            this.questionBank = questionBank;
+        }
+
         public void addQuestionToBank(Question question) {
             if (this.questionBank == null) {
                 this.questionBank = new ArrayList<>();
             }
             this.questionBank.add(question);
+            question.setCourse(this);
+        }
+
+        public void removeQuestionFromBank(Question question) {
+            if (this.questionBank != null) {
+                this.questionBank.remove(question);
+                question.setCourse(null);
+            }
         }
 
         public List<Quiz> getQuizzes() {

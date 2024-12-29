@@ -15,9 +15,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component // Ensure this annotation is present
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    // ... rest of the code remains the same
+
 
     @Autowired
     private JwtUtil jwtUtil;
