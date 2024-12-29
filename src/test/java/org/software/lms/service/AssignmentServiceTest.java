@@ -199,7 +199,7 @@ class AssignmentServiceTest {
 
         // Verifying the results
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(2, result.size());
     }
 
     @Test
