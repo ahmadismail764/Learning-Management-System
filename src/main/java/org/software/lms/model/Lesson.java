@@ -1,4 +1,5 @@
 package org.software.lms.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,8 @@ public class Lesson {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+
     @Column(nullable = false)
     private String title;
 
@@ -23,18 +26,27 @@ public class Lesson {
 
     @ManyToOne
     @JoinColumn(name = "course_id",nullable = false)
+    @JsonIgnore
     private Course course;
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<LessonResource> lessonResources = new ArrayList<>();
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<LessonAttendance> attendanceRecords = new ArrayList<>();
 
     private String currentOTP;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date otpGeneratedAt;
+
+    @Column(nullable = false)
+    private Integer duration;
+
+    @Column(nullable = false)
+    private Integer orderIndex;
 
     @Column(nullable = false)
     private Date createdAt = new Date();
@@ -84,6 +96,7 @@ public class Lesson {
         resources.add(resource);
         resource.setLesson(this);
     }
+
 
     public void removeResource(LessonResource resource) {
         if (this.resources != null) {
@@ -138,6 +151,22 @@ public class Lesson {
 
     public void setAttendanceRecords(List<LessonAttendance> attendanceRecords) {
         this.attendanceRecords = attendanceRecords;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public Integer getOrderIndex() {
+        return orderIndex;
+    }
+
+    public void setOrderIndex(Integer orderIndex) {
+        this.orderIndex = orderIndex;
     }
 
     public String getCurrentOTP() {

@@ -15,53 +15,49 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/questions")
+@RequestMapping("/api/courses/{courseId}/questions")
 public class QuestionController {
 
     @Autowired
     private QuestionService questionService;
 
-    @Autowired
-    public QuestionController(QuestionService questionService) {
-        this.questionService = questionService;
-    }
-
-    @PostMapping("/courses/{courseId}")
+    @PostMapping
     @PreAuthorize("hasRole('INSTRUCTOR')")
-    public ResponseEntity<QuestionDTO> addQuestion(
-            @Valid @RequestBody QuestionDTO questionDTO,
-            @PathVariable Long courseId) {
+    public ResponseEntity<QuestionDTO> addQuestionToCourse(@PathVariable Long courseId,
+                                                           @Valid @RequestBody QuestionDTO questionDTO) {
         QuestionDTO createdQuestion = questionService.addQuestionToBank(questionDTO, courseId);
         return new ResponseEntity<>(createdQuestion, HttpStatus.CREATED);
     }
 
-
-    @PutMapping("/courses/{courseId}/{questionId}")
+    @GetMapping
     @PreAuthorize("hasRole('INSTRUCTOR')")
-    public ResponseEntity<Question> updateQuestion(@PathVariable Long questionId, @RequestBody Question question) {
-        Question updatedQuestion = questionService.updateQuestion(questionId, question);
-        return ResponseEntity.ok(updatedQuestion);
+    public ResponseEntity<List<QuestionDTO>> getQuestionsByCourse(@PathVariable Long courseId) {
+        List<QuestionDTO> questions = questionService.getQuestionsByCourse(courseId);
+        return ResponseEntity.ok(questions);
     }
 
     @GetMapping("/{questionId}")
     @PreAuthorize("hasRole('INSTRUCTOR')")
-    public ResponseEntity<QuestionDTO> getQuestionById(@PathVariable Long questionId) {
+    public ResponseEntity<QuestionDTO> getQuestionById(@PathVariable Long courseId,
+                                                       @PathVariable Long questionId) {
         QuestionDTO question = questionService.getQuestionById(questionId);
         return ResponseEntity.ok(question);
     }
 
+    @PutMapping("/{questionId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<QuestionDTO> updateQuestion(@PathVariable Long courseId,
+                                                      @PathVariable Long questionId,
+                                                      @Valid @RequestBody QuestionDTO questionDTO) {
+        QuestionDTO updatedQuestion = questionService.updateQuestion(questionId, questionDTO);
+        return ResponseEntity.ok(updatedQuestion);
+    }
+
     @DeleteMapping("/{questionId}")
     @PreAuthorize("hasRole('INSTRUCTOR')")
-    public ResponseEntity<Void> deleteQuestion(@PathVariable Long questionId) {
+    public ResponseEntity<Void> deleteQuestion(@PathVariable Long courseId,
+                                               @PathVariable Long questionId) {
         questionService.deleteQuestion(questionId);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/course/{courseId}")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
-    public ResponseEntity<List<Question>> getQuestionsByCourse(@PathVariable Long courseId) { //To get the question Bank if Course
-        List<Question> questions = questionService.getQuestionsByCourse(courseId);
-        return new ResponseEntity<>(questions, HttpStatus.CREATED);
-    }
-
 }

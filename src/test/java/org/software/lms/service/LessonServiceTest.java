@@ -1,145 +1,119 @@
-//package org.software.lms.service;
-//
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.software.lms.exception.ResourceNotFoundException;
-//import org.software.lms.model.Course;
-//import org.software.lms.model.Lesson;
-//import org.software.lms.model.LessonResource;
-//import org.software.lms.model.ResourceType;
-//import org.software.lms.repository.LessonRepository;
-//import org.software.lms.repository.LessonResourceRepository;
-//import org.springframework.mock.web.MockMultipartFile;
-//
-//import java.io.IOException;
-//import java.util.Arrays;
-//import java.util.Date;
-//import java.util.List;
-//import java.util.Optional;
-//
-//import static org.mockito.Mockito.*;
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//@ExtendWith(MockitoExtension.class)
-//public class LessonServiceTest {
-//
-//    @Mock
-//    private LessonRepository lessonRepository;
-//
-//    @Mock
-//    private LessonResourceRepository lessonResourceRepository;
-//
-//    private Lesson lesson;
-//
-//    @BeforeEach
-//    void setUp() {
-//        lesson = new Lesson();
+package org.software.lms.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.software.lms.dto.LessonDTO;
+import org.software.lms.exception.ResourceNotFoundException;
+import org.software.lms.model.*;
+import org.software.lms.repository.*;
+import org.software.lms.service.*;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.util.FileSystemUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class LessonServiceTest {
+
+    @Mock
+    private LessonRepository lessonRepository;
+
+    @Mock
+    private CourseRepository courseRepository;
+
+    @Mock
+    private LessonResourceRepository lessonResourceRepository;
+
+    @InjectMocks
+    private LessonService lessonService;
+
+    @Mock
+    private MultipartFile file;
+
+    private Course course;
+    private LessonDTO lessonDTO;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        
+        // Mock Course
+        course = new Course();
+        course.setId(1L);
+        course.setTitle("Course 1");
+        
+        // Mock LessonDTO
+        lessonDTO = new LessonDTO();
+        lessonDTO.setTitle("Lesson 1");
+        lessonDTO.setDescription("Lesson description");
+        lessonDTO.setDuration(120);
+        lessonDTO.setOrderIndex(1);
+        
+        // Mock file
+        file = new MockMultipartFile("testFile", "testFile.pdf", "application/pdf", "content".getBytes());
+    }
+
+    @Test
+    void testCreateLesson() {
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(lessonRepository.save(any(Lesson.class))).thenReturn(new Lesson());
+
+        Lesson createdLesson = lessonService.createLesson(1L, lessonDTO);
+
+        assertNotNull(createdLesson);
+        verify(courseRepository, times(1)).findById(1L);
+        verify(lessonRepository, times(1)).save(any(Lesson.class));
+    }
+
+    @Test
+    void testCreateLesson_CourseNotFound() {
+        when(courseRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> lessonService.createLesson(1L, lessonDTO));
+    }
+
+//    @Test
+//    void testUploadResource() throws IOException {
+//        Lesson lesson = new Lesson();
 //        lesson.setId(1L);
-//        lesson.setTitle("Sample Lesson");
-//        lesson.setDescription("Sample Description");
-//        lesson.setCourse(null);  // Simulating a lesson without course for tests
+//        when(lessonRepository.findByIdAndCourse_Id(1L, 1L)).thenReturn(Optional.of(lesson));
+//
+//        when(lessonResourceRepository.save(any(LessonResource.class))).thenReturn(new LessonResource());
+//
+//        LessonResource uploadedResource = lessonService.uploadResource(1L, 1L, file);
+//
+//        assertNotNull(uploadedResource);
+//        verify(lessonResourceRepository, times(1)).save(any(LessonResource.class));
 //    }
-//
-//
-//    @Test
-//    void testCreateLessonWithNullCourse() {
-//        lesson.setCourse(null);
-//
-//        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-//            lessonService.createLesson(lesson);
-//        });
-//
-//        assertEquals("Lesson must be associated with a course", thrown.getMessage());
-//    }
-//
-//    @Test
-//    void testUpdateLesson() {
-//        Lesson updatedDetails = new Lesson();
-//        updatedDetails.setTitle("Updated Title");
-//        updatedDetails.setDescription("Updated Description");
-//
-//        when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
-//        when(lessonRepository.save(lesson)).thenReturn(lesson);
-//
-//        Lesson updatedLesson = lessonService.updateLesson(1L, updatedDetails);
-//
-//        assertEquals("Updated Title", updatedLesson.getTitle());
-//        assertEquals("Updated Description", updatedLesson.getDescription());
-//        verify(lessonRepository, times(1)).save(lesson);
-//    }
-//
-//    @Test
-//    void testGenerateOTP() {
-//        when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
-//
-//        String otp = lessonService.generateOTP(1L);
-//
-//        assertNotNull(otp);
-//        assertEquals(6, otp.length());
-//        verify(lessonRepository, times(1)).save(lesson);
-//    }
-//
-//    @Test
-//    void testValidateOTP_Valid() {
-//        lesson.setCurrentOTP("123456");
-//        lesson.setOtpGeneratedAt(new Date());
-//        when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
-//
-//        boolean isValid = lessonService.validateOTP(1L, "123456");
-//
-//        assertTrue(isValid);
-//    }
-//
-//    @Test
-//    void testValidateOTP_Invalid() {
-//        lesson.setCurrentOTP("123456");
-//        lesson.setOtpGeneratedAt(new Date());
-//        when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
-//
-//        boolean isValid = lessonService.validateOTP(1L, "654321");
-//
-//        assertFalse(isValid);
-//    }
-//
-//    @Test
-//    void testGetLessonResources() {
-//        LessonResource resource1 = new LessonResource();
-//        resource1.setFileName("file1.pdf");
-//        LessonResource resource2 = new LessonResource();
-//        resource2.setFileName("file2.mp4");
-//
-//        lesson.setLessonResources(Arrays.asList(resource1, resource2));
-//        when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
-//
-//        List<LessonResource> resources = lessonService.getLessonResources(1L);
-//
-//        assertEquals(2, resources.size());
-//        assertEquals("file1.pdf", resources.get(0).getFileName());
-//        assertEquals("file2.mp4", resources.get(1).getFileName());
-//    }
-//
-//    @Test
-//    void testDeleteLesson() {
-//        when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
-//        doNothing().when(lessonRepository).delete(lesson);
-//
-//        lessonService.deleteLesson(1L);
-//
-//        verify(lessonRepository, times(1)).delete(lesson);
-//    }
-//
-//    @Test
-//    void testLessonNotFound() {
-//        when(lessonRepository.findById(1L)).thenReturn(Optional.empty());
-//
-//        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
-//            lessonService.updateLesson(1L, lesson);
-//        });
-//
-//        assertEquals("Lesson not found with id: 1", thrown.getMessage());
-//    }
-//}
+
+    @Test
+    void testUploadResource_LessonNotFound() throws IOException {
+        when(lessonRepository.findByIdAndCourse_Id(1L, 1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> lessonService.uploadResource(1L, 1L, file));
+    }
+
+    @Test
+    void testGetLessonsByCourse() {
+        when(courseRepository.existsById(1L)).thenReturn(true);
+        when(lessonRepository.findByCourse_IdOrderByOrderIndexAsc(1L)).thenReturn(new ArrayList<>());
+
+        var lessons = lessonService.getLessonsByCourse(1L);
+
+        assertNotNull(lessons);
+        verify(lessonRepository, times(1)).findByCourse_IdOrderByOrderIndexAsc(1L);
+    }
+
+    @Test
+    void testGetLessonsByCourse_CourseNotFound() {
+        when(courseRepository.existsById(1L)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> lessonService.getLessonsByCourse(1L));
+    }
+}

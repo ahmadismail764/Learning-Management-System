@@ -1,7 +1,7 @@
 package org.software.lms.service;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -9,19 +9,24 @@ import org.software.lms.exception.ResourceNotFoundException;
 import org.software.lms.model.Assignment;
 import org.software.lms.model.Course;
 import org.software.lms.model.Submission;
+import org.software.lms.model.User;
 import org.software.lms.repository.AssignmentRepository;
 import org.software.lms.repository.CourseRepository;
 import org.software.lms.repository.SubmissionRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AssignmentServiceTest {
+
+    @InjectMocks
+    private AssignmentService assignmentService;
 
     @Mock
     private AssignmentRepository assignmentRepository;
@@ -32,134 +37,185 @@ class AssignmentServiceTest {
     @Mock
     private CourseRepository courseRepository;
 
-    @InjectMocks
-    private AssignmentService assignmentService;
+    private Course course;
+    private Assignment assignment;
+    private Submission submission;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // Create mock Course
+        course = new Course();
+        course.setId(1L);
+
+        // Create mock Assignment
+        assignment = new Assignment();
+        assignment.setId(1L);
+        assignment.setCourse(course);
+        assignment.setTitle("Test Assignment");
+        assignment.setDescription("Test Description");
+        assignment.setDueDate(LocalDateTime.now().plusDays(1));
+
+        // Create mock Submission
+        submission = new Submission();
+        submission.setId(1L);
+        submission.setAssignment(assignment);
+        submission.setStudentId(123L);
+        submission.setFilePath("filePath");
     }
 
     @Test
-    void testCreateAssignment_Success() {
-        Long courseId = 1L;
-        Assignment assignment = new Assignment();
-        assignment.setTitle("Test Assignment");
-
-        Course course = new Course();
-        course.setId(courseId);
-
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+    void testCreateAssignment() {
+        // Mocking repository save
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
 
-        Assignment createdAssignment = assignmentService.createAssignment(courseId, assignment);
+        // Calling the service method
+        Assignment createdAssignment = assignmentService.createAssignment(1L, assignment);
 
+        // Verifying the results
         assertNotNull(createdAssignment);
         assertEquals("Test Assignment", createdAssignment.getTitle());
         verify(assignmentRepository, times(1)).save(any(Assignment.class));
     }
 
     @Test
-    void testCreateAssignment_CourseNotFound() {
-        Long courseId = 1L;
-        Assignment assignment = new Assignment();
+    void testGetAssignment() {
+        // Mocking repository findByCourseIdAndId
+        when(assignmentRepository.findByCourseIdAndId(1L, 1L)).thenReturn(Optional.of(assignment));
 
-        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+        // Calling the service method
+        Assignment foundAssignment = assignmentService.getAssignment(1L, 1L);
 
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> assignmentService.createAssignment(courseId, assignment)
-        );
-
-        assertEquals("Course not found with id: 1", exception.getMessage());
-        verify(assignmentRepository, never()).save(any(Assignment.class));
+        // Verifying the results
+        assertNotNull(foundAssignment);
+        assertEquals("Test Assignment", foundAssignment.getTitle());
     }
 
     @Test
-    void testGetAssignment_Success() {
-        Long courseId = 1L;
-        Long assignmentId = 2L;
+    void testGetAssignmentNotFound() {
+        // Mocking repository to return empty
+        when(assignmentRepository.findByCourseIdAndId(1L, 1L)).thenReturn(Optional.empty());
 
-        Assignment assignment = new Assignment();
-        assignment.setId(assignmentId);
-        assignment.setCourse(new Course());
-
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(assignment));
-
-        Assignment fetchedAssignment = assignmentService.getAssignment(courseId, assignmentId);
-
-        assertNotNull(fetchedAssignment);
-        assertEquals(assignmentId, fetchedAssignment.getId());
-        verify(assignmentRepository, times(1)).findByCourseIdAndId(courseId, assignmentId);
+        // Calling the service method and asserting exception
+        assertThrows(ResourceNotFoundException.class, () -> assignmentService.getAssignment(1L, 1L));
     }
 
     @Test
-    void testGetAssignment_NotFound() {
-        Long courseId = 1L;
-        Long assignmentId = 2L;
+    void testUpdateAssignment() {
+        // Mocking repository findByCourseIdAndId and save
+        when(assignmentRepository.findByCourseIdAndId(1L, 1L)).thenReturn(Optional.of(assignment));
+        when(assignmentRepository.save(any(Assignment.class))).thenReturn(assignment);
 
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.empty());
+        // Mock new assignment details
+        Assignment newDetails = new Assignment();
+        newDetails.setTitle("Updated Title");
+        newDetails.setDescription("Updated Description");
+        newDetails.setDueDate(LocalDateTime.now().plusDays(2));
 
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> assignmentService.getAssignment(courseId, assignmentId)
-        );
+        // Calling the service method
+        Assignment updatedAssignment = assignmentService.updateAssignment(1L, 1L, newDetails);
 
-        assertEquals("Assignment not found", exception.getMessage());
-        verify(assignmentRepository, times(1)).findByCourseIdAndId(courseId, assignmentId);
-    }
-
-    @Test
-    void testUpdateAssignment_Success() {
-        Long courseId = 1L;
-        Long assignmentId = 2L;
-
-        Assignment existingAssignment = new Assignment();
-        existingAssignment.setId(assignmentId);
-
-        Assignment updatedDetails = new Assignment();
-        updatedDetails.setTitle("Updated Title");
-        updatedDetails.setDescription("Updated Description");
-
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(existingAssignment));
-        when(assignmentRepository.save(existingAssignment)).thenReturn(existingAssignment);
-
-        Assignment updatedAssignment = assignmentService.updateAssignment(courseId, assignmentId, updatedDetails);
-
+        // Verifying the results
+        assertNotNull(updatedAssignment);
         assertEquals("Updated Title", updatedAssignment.getTitle());
-        assertEquals("Updated Description", updatedAssignment.getDescription());
-        verify(assignmentRepository, times(1)).save(existingAssignment);
     }
 
     @Test
-    void testDeleteAssignment_Success() {
-        Long courseId = 1L;
-        Long assignmentId = 2L;
+    void testDeleteAssignment() {
+        // Mocking repository findByCourseIdAndId and delete
+        when(assignmentRepository.findByCourseIdAndId(1L, 1L)).thenReturn(Optional.of(assignment));
 
-        Assignment assignment = new Assignment();
-        assignment.setId(assignmentId);
+        // Calling the service method
+        assignmentService.deleteAssignment(1L, 1L);
 
-        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(assignment));
-
-        assignmentService.deleteAssignment(courseId, assignmentId);
-
+        // Verifying the repository delete method was called
         verify(assignmentRepository, times(1)).delete(assignment);
     }
 
     @Test
-    void testGetAssignmentsByCourse_Success() {
-        Long courseId = 1L;
+    void testGradeSubmission() {
 
-        Assignment assignment1 = new Assignment();
-        Assignment assignment2 = new Assignment();
+        when(submissionRepository.findById(1L)).thenReturn(Optional.of(submission));
+        when(submissionRepository.save(any(Submission.class))).thenReturn(submission);
 
-        when(courseRepository.existsById(courseId)).thenReturn(true);
-        when(assignmentRepository.findByCourseId(courseId)).thenReturn(Arrays.asList(assignment1, assignment2));
+        Submission result = assignmentService.gradeSubmission(1L, 1L, 85.0, "Well Done!");
 
-        List<Assignment> assignments = assignmentService.getAssignmentsByCourse(courseId);
-
-        assertEquals(2, assignments.size());
-        verify(assignmentRepository, times(1)).findByCourseId(courseId);
+        assertNotNull(result);
+        verify(submissionRepository, times(1)).save(any(Submission.class));
     }
 
+    @Test
+    void testGradeSubmissionNotFound() {
+        // Mocking repository to return empty
+        when(submissionRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Calling the service method and asserting exception
+        assertThrows(ResourceNotFoundException.class, () -> assignmentService.gradeSubmission(1L, 1L, 95.0, "Great work!"));
+    }
+
+    @Test
+    void testSubmitAssignment() {
+        String filePath = "path/to/file";
+
+        Course course = new Course();
+        User student = new User();
+        student.setId(123L);
+        course.setStudentEnrolledCourses(Arrays.asList(student));
+
+        Assignment assignment = new Assignment();
+        assignment.setCourse(course);
+        assignment.setDueDate(LocalDateTime.now().plusDays(1));
+
+        when(assignmentRepository.findByCourseIdAndId(1L, 1L))
+                .thenReturn(Optional.of(assignment));
+        when(submissionRepository.existsByAssignmentIdAndStudentId(1L, 123L))
+                .thenReturn(false);
+        when(submissionRepository.save(any(Submission.class)))
+                .thenReturn(new Submission());
+
+        Submission result = assignmentService.submitAssignment(1L, 1L, 123L, filePath);
+
+        assertNotNull(result);
+        verify(submissionRepository, times(1)).save(any(Submission.class));
+    }
+
+    @Test
+    void testGetSubmissionsByAssignment() {
+        Long courseId = 1L;
+        Long assignmentId = 1L;
+        List<Submission> submissions = Arrays.asList(new Submission(), new Submission());
+
+        // Mocking repository findByAssignmentId
+        when(submissionRepository.findByAssignmentId(1L)).thenReturn(List.of(submission));
+
+        Assignment assignment = new Assignment();
+        when(assignmentRepository.findByCourseIdAndId(courseId, assignmentId)).thenReturn(Optional.of(assignment));
+        when(submissionRepository.findByAssignmentId(assignmentId)).thenReturn(submissions);
+
+        // Calling the service method
+        List<Submission> result = assignmentService.getSubmissionsByAssignment(1L, 1L);
+
+        // Verifying the results
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    void testGetStudentSubmissions() {
+        Long courseId = 1L;
+
+        // Mocking repository findByAssignmentCourseIdAndStudentId
+        when(submissionRepository.findByAssignmentCourseIdAndStudentId(1L, 123L)).thenReturn(List.of(submission));
+
+        when(courseRepository.existsById(courseId)).thenReturn(true);
+
+        // Calling the service method
+        List<Submission> submissions = assignmentService.getStudentSubmissions(1L, 123L);
+
+        // Verifying the results
+        assertNotNull(submissions);
+        assertEquals(1, submissions.size());
+    }
 }

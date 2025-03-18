@@ -9,8 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+
 @Repository
 public interface LessonResourceRepository extends JpaRepository<LessonResource, Long> {
-    List<LessonResource> findByLessonId(Long lessonId);
+    List<LessonResource> findByLesson_Id(Long lessonId);
+    Optional<LessonResource> findByIdAndLesson_IdAndLesson_Course_Id(
+            Long id, Long lessonId, Long courseId);
 }
-

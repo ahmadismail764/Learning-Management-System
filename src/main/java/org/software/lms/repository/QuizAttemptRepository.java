@@ -14,4 +14,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
 
     // Find quiz attempts by quiz ID to track attempts for a specific quiz
     List<QuizAttempt> findByQuizId(Long quizId);
+
+    List<QuizAttempt> findByQuizCourseIdAndStudentId(Long courseId, Long studentId);
+
 }

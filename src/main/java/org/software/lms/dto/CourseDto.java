@@ -25,4 +25,5 @@ public class CourseDto {
     private Set<User> studentEnrolledCourses;
     private Date createdAt;
     private Date updatedAt;
+    private List<QuestionDTO> questionBank;
 }

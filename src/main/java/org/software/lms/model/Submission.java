@@ -1,10 +1,12 @@
 package org.software.lms.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "submissions")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Submission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

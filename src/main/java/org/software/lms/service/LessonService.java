@@ -1,137 +1,175 @@
-//package org.software.lms.service;
-//
-//import jakarta.transaction.Transactional;
-//import org.software.lms.exception.ResourceNotFoundException;
-//import org.software.lms.model.Lesson;
-//import org.software.lms.model.LessonResource;
-//import org.software.lms.model.ResourceType;
-//import org.software.lms.repository.LessonRepository;
-//import org.software.lms.repository.LessonResourceRepository;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Service;
-//import org.springframework.web.multipart.MultipartFile;
-//import org.springframework.util.StringUtils;
-//
-//import java.io.IOException;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
-//import java.nio.file.StandardCopyOption;
-//import java.util.*;
-//
-//@Service
-//@Transactional
-//public class LessonService {
-//    @Autowired
-//    private LessonRepository lessonRepository;
-//
-//    @Autowired
-//    private LessonResourceRepository lessonResourceRepository;
-//
-//    @Value("${file.upload.directory}")
-//    private String uploadDirectory;
-//
-//    public Lesson createLesson(Lesson lesson) {
-//        if (lesson.getCourse() == null) {
-//            throw new IllegalArgumentException("Lesson must be associated with a course");
-//        }
-//        lesson.setCreatedAt(new Date());
-//        lesson.setUpdatedAt(new Date());
-//        return lessonRepository.save(lesson);
-//    }
-//
-//    public Lesson updateLesson(Long lessonId, Lesson lessonDetails) {
-//        Lesson lesson = lessonRepository.findById(lessonId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
-//
-//        lesson.setTitle(lessonDetails.getTitle());
-//        lesson.setDescription(lessonDetails.getDescription());
-//        lesson.setUpdatedAt(new Date());
-//
-//        return lessonRepository.save(lesson);
-//    }
-//
-//    public String generateOTP(Long lessonId) {
-//        Lesson lesson = lessonRepository.findById(lessonId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
-//
-//        // Generate a 6-digit OTP
-//        String otp = String.format("%06d", new Random().nextInt(999999));
-//        lesson.setCurrentOTP(otp);
-//        lesson.setOtpGeneratedAt(new Date());
-//        lessonRepository.save(lesson);
-//
-//        return otp;
-//    }
-//
-//    public boolean validateOTP(Long lessonId, String otp) {
-//        Lesson lesson = lessonRepository.findById(lessonId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
-//
-//        if (lesson.getCurrentOTP() == null || lesson.getOtpGeneratedAt() == null) {
-//            return false;
-//        }
-//
-//        // Check if OTP is expired (30 minutes validity)
-//        boolean isExpired = new Date().getTime() - lesson.getOtpGeneratedAt().getTime() > 30 * 60 * 1000;
-//        return !isExpired && lesson.getCurrentOTP().equals(otp);
-//    }
-//
-//    public LessonResource uploadMediaFile(Long lessonId, MultipartFile file) throws IOException {
-//        Lesson lesson = lessonRepository.findById(lessonId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
-//
-//        // Create directory if it doesn't exist
-//        Path uploadPath = Paths.get(uploadDirectory);
-//        if (!Files.exists(uploadPath)) {
-//            Files.createDirectories(uploadPath);
-//        }
-//
-//        // Generate unique filename
-//        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-//        String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
-//        Path filePath = uploadPath.resolve(fileName);
-//
-//        // Save file to disk
-//        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-//
-//        // Determine resource type based on file extension
-//        ResourceType resourceType = determineResourceType(originalFilename);
-//
-//        // Create and save media file entity
-//        LessonResource lessonResource = new LessonResource();
-//        lessonResource.setFileName(fileName);
-//        lessonResource.setType(resourceType);
-//        lessonResource.setFileUrl(filePath.toString());
-//        lessonResource.setFileSize(file.getSize());
-//        lessonResource.setLesson(lesson);
-//        lessonResource.setUploadedAt(new Date());
-//
-//        return lessonResourceRepository.save(lessonResource);
-//    }
-//
-//    private ResourceType determineResourceType(String fileName) {
-//        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-//        return switch (extension) {
-//            case "pdf" -> ResourceType.PDF;
-//            case "mp4", "avi", "mov" -> ResourceType.VIDEO;
-//            case "mp3", "wav" -> ResourceType.AUDIO;
-//            case "jpg", "jpeg", "png", "gif" -> ResourceType.IMAGE;
-//            case "doc", "docx", "txt" -> ResourceType.DOCUMENT;
-//            default -> ResourceType.OTHER;
-//        };
-//    }
-//
-//    public List<LessonResource> getLessonResources(Long lessonId) {
-//        Lesson lesson = lessonRepository.findById(lessonId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
-//        return lesson.getLessonResources();
-//    }
-//
-//    public void deleteLesson(Long lessonId) {
-//        Lesson lesson = lessonRepository.findById(lessonId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
-//        lessonRepository.delete(lesson);
-//    }
-//}
+package org.software.lms.service;
+
+import jakarta.transaction.Transactional;
+import org.software.lms.dto.LessonDTO;
+import org.software.lms.exception.ResourceNotFoundException;
+import org.software.lms.model.Course;
+import org.software.lms.model.Lesson;
+import org.software.lms.model.LessonResource;
+import org.software.lms.model.ResourceType;
+import org.software.lms.repository.CourseRepository;
+import org.software.lms.repository.LessonRepository;
+import org.software.lms.repository.LessonResourceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+
+@Service
+@Transactional
+public class LessonService {
+    @Autowired
+    private LessonRepository lessonRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private LessonResourceRepository lessonResourceRepository;
+
+    @Value("${file.upload.directory}")
+    private String uploadDirectory;
+
+    public Lesson createLesson(Long courseId, LessonDTO lessonDTO) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+
+        Lesson lesson = new Lesson();
+        lesson.setTitle(lessonDTO.getTitle());
+        lesson.setDescription(lessonDTO.getDescription());
+        lesson.setDuration(lessonDTO.getDuration());
+        lesson.setOrderIndex(lessonDTO.getOrderIndex());
+        lesson.setCourse(course);
+        lesson.setCreatedAt(new Date());
+        lesson.setUpdatedAt(new Date());
+
+        return lessonRepository.save(lesson);
+
+
+    }
+
+    public List<Lesson> getLessonsByCourse(Long courseId) {
+        if (!courseRepository.existsById(courseId)) {
+            throw new ResourceNotFoundException("Course not found with id: " + courseId);
+        }
+        return lessonRepository.findByCourse_IdOrderByOrderIndexAsc(courseId);
+    }
+
+    public Lesson getLessonById(Long courseId, Long lessonId) {
+        return lessonRepository.findByIdAndCourse_Id(lessonId, courseId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Lesson not found with id: " + lessonId + " in course: " + courseId));
+    }
+
+    public Lesson updateLesson(Long courseId, Long lessonId, LessonDTO lessonDTO) {
+        Lesson lesson = getLessonById(courseId, lessonId);
+
+        lesson.setTitle(lessonDTO.getTitle());
+        lesson.setDescription(lessonDTO.getDescription());
+        lesson.setDuration(lessonDTO.getDuration());
+        lesson.setOrderIndex(lessonDTO.getOrderIndex());
+        lesson.setUpdatedAt(new Date());
+
+        return lessonRepository.save(lesson);
+    }
+
+    public void deleteLesson(Long courseId, Long lessonId) {
+        Lesson lesson = getLessonById(courseId, lessonId);
+        // Delete associated resources from filesystem
+        for (LessonResource resource : lesson.getLessonResources()) {
+            deleteResourceFile(resource.getFileUrl());
+        }
+        lessonRepository.delete(lesson);
+    }
+
+    // Resource management methods
+    public LessonResource uploadResource(Long courseId, Long lessonId, MultipartFile file) throws IOException {
+        Lesson lesson = getLessonById(courseId, lessonId);
+
+        String fileName = processAndSaveFile(file);
+        ResourceType resourceType = determineResourceType(file.getOriginalFilename());
+
+        LessonResource resource = new LessonResource();
+        resource.setLesson(lesson);
+        resource.setFileName(fileName);
+        resource.setFileUrl(uploadDirectory + "/" + fileName);
+        resource.setType(resourceType);
+        resource.setFileSize(file.getSize());
+        resource.setUploadedAt(new Date());
+
+        return lessonResourceRepository.save(resource);
+    }
+    public List<LessonResource> getLessonResources(Long courseId, Long lessonId) {
+        Lesson lesson = getLessonById(courseId, lessonId);
+        return lessonResourceRepository.findByLesson_Id(lessonId);
+    }
+
+    public Resource viewResource(Long courseId, Long lessonId, Long resourceId) throws IOException {
+        LessonResource lessonResource = lessonResourceRepository.findByIdAndLesson_IdAndLesson_Course_Id(
+                        resourceId, lessonId, courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
+
+        Path filePath = Paths.get(lessonResource.getFileUrl());
+        if (!Files.exists(filePath)) {
+            throw new ResourceNotFoundException("File not found: " + lessonResource.getFileName());
+        }
+
+        return new FileSystemResource(filePath.toFile());
+    }
+
+
+    private String processAndSaveFile(MultipartFile file) throws IOException {
+        Path uploadPath = Paths.get(uploadDirectory);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+        String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
+        Path filePath = uploadPath.resolve(fileName);
+
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        return fileName;
+    }
+
+    private ResourceType determineResourceType(String fileName) {
+        if (fileName == null) {
+            return ResourceType.OTHER;
+        }
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        return switch (extension) {
+            case "pdf" -> ResourceType.PDF;
+            case "mp4", "avi", "mov" -> ResourceType.VIDEO;
+            case "mp3", "wav" -> ResourceType.AUDIO;
+            case "jpg", "jpeg", "png", "gif" -> ResourceType.IMAGE;
+            case "doc", "docx", "txt" -> ResourceType.DOCUMENT;
+            default -> ResourceType.OTHER;
+        };
+    }
+    private void deleteResourceFile(String fileUrl) {
+        try {
+            Path filePath = Paths.get(fileUrl);
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+        }
+    }
+
+    public void deleteResource(Long courseId, Long lessonId, Long resourceId) {
+        LessonResource resource = lessonResourceRepository.findByIdAndLesson_IdAndLesson_Course_Id(
+                        resourceId, lessonId, courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
+
+        deleteResourceFile(resource.getFileUrl());
+        lessonResourceRepository.delete(resource);
+    }
+}

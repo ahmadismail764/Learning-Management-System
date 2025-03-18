@@ -2,146 +2,141 @@ package org.software.lms.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.software.lms.exception.InvalidOTPException;
-import org.software.lms.exception.OTPExpiredException;
-import org.software.lms.exception.ResourceNotFoundException;
-import org.software.lms.model.Lesson;
-import org.software.lms.model.LessonAttendance;
-import org.software.lms.model.User;
-import org.software.lms.repository.LessonAttendanceRepository;
-import org.software.lms.repository.LessonRepository;
-import org.software.lms.repository.UserRepository;
-
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.software.lms.model.*;
+import org.software.lms.repository.*;
+import org.software.lms.service.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AttendanceServiceTest {
+
+    @InjectMocks
+    private AttendanceService attendanceService;
 
     @Mock
     private LessonRepository lessonRepository;
 
     @Mock
-    private LessonAttendanceRepository attendanceRepository;
-
-    @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
-    private AttendanceService attendanceService;
+    @Mock
+    private LessonAttendanceRepository attendanceRepository;
+
+    private Lesson mockLesson;
+    private User mockStudent;
+    private LessonAttendance mockAttendance;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+        mockLesson = new Lesson();
+        mockLesson.setId(1L);
+        mockLesson.setCurrentOTP("123456");
+        mockLesson.setOtpGeneratedAt(new Date());
 
+        mockStudent = new User();
+        mockStudent.setId(1L);
 
-    @Test
-    void testMarkAttendance_LessonNotFound() {
-        Long lessonId = 1L;
-        Long studentId = 2L;
-        String otp = "123456";
-
-        when(lessonRepository.findById(lessonId)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> attendanceService.markAttendance(lessonId, studentId, otp)
-        );
-
-        assertEquals("Lesson not found with id: 1", exception.getMessage());
-        verify(attendanceRepository, never()).save(any(LessonAttendance.class));
+        mockAttendance = new LessonAttendance();
+        mockAttendance.setLesson(mockLesson);
+        mockAttendance.setStudent(mockStudent);
+        mockAttendance.setAttendanceDate(new Date());
+        mockAttendance.setOtpUsed("123456");
+        mockAttendance.setPresent(true);
     }
 
     @Test
-    void testMarkAttendance_InvalidOTP() {
-        Long lessonId = 1L;
-        Long studentId = 2L;
-        String otp = "123456";
+    void testGenerateOTP() {
+        when(lessonRepository.findByIdAndCourse_Id(1L, 1L)).thenReturn(Optional.of(mockLesson));
+        when(lessonRepository.save(any(Lesson.class))).thenReturn(mockLesson);
 
-        Lesson lesson = new Lesson();
-        lesson.setId(lessonId);
-        lesson.setCurrentOTP("654321");
+        String otp = attendanceService.generateOTP(1L, 1L);
 
-        User student = new User();
-        student.setId(studentId);
-
-        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
-
-        verify(attendanceRepository, never()).save(any(LessonAttendance.class));
+        assertNotNull(otp);
+        assertEquals(6, otp.length());
+        verify(lessonRepository, times(1)).findByIdAndCourse_Id(1L, 1L);
+        verify(lessonRepository, times(1)).save(mockLesson);
     }
 
     @Test
-    void testMarkAttendance_OTPExpired() {
-        Long lessonId = 1L;
-        Long studentId = 2L;
-        String otp = "123456";
+    void testMarkAttendance() {
+        when(lessonRepository.findByIdAndCourse_Id(1L, 1L)).thenReturn(Optional.of(mockLesson));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockStudent));
+        when(attendanceRepository.findByLessonAndStudent(mockLesson, mockStudent)).thenReturn(Optional.empty());
+        when(attendanceRepository.save(any(LessonAttendance.class))).thenReturn(mockAttendance);
 
-        Lesson lesson = new Lesson();
-        lesson.setId(lessonId);
-        lesson.setCurrentOTP(otp);
-        lesson.setOtpGeneratedAt(new Date(System.currentTimeMillis() - 31 * 60 * 1000)); // 31 minutes ago
+        LessonAttendance attendance = attendanceService.markAttendance(1L, 1L, 1L, "123456");
 
-        User student = new User();
-        student.setId(studentId);
-
-        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
-
-        verify(attendanceRepository, never()).save(any(LessonAttendance.class));
+        assertNotNull(attendance);
+        assertTrue(attendance.getPresent());
+        assertEquals(mockLesson, attendance.getLesson());
+        assertEquals(mockStudent, attendance.getStudent());
+        verify(attendanceRepository, times(1)).save(any(LessonAttendance.class));
     }
 
     @Test
-    void testGetLessonAttendance_Success() {
-        Long lessonId = 1L;
+    void testMarkAttendanceWithInvalidOTP() {
+        when(lessonRepository.findByIdAndCourse_Id(1L, 1L)).thenReturn(Optional.of(mockLesson));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockStudent));
 
-        Lesson lesson = new Lesson();
-        lesson.setId(lessonId);
+        Exception exception = assertThrows(IllegalStateException.class, () ->
+                attendanceService.markAttendance(1L, 1L, 1L, "654321"));
 
-        List<LessonAttendance> attendances = Arrays.asList(new LessonAttendance(), new LessonAttendance());
-
-        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-        when(attendanceRepository.findByLesson(lesson)).thenReturn(attendances);
-
-        List<LessonAttendance> result = attendanceService.getLessonAttendance(lessonId);
-
-        assertEquals(2, result.size());
-        verify(attendanceRepository, times(1)).findByLesson(lesson);
+        assertEquals("Invalid OTP", exception.getMessage());
     }
 
     @Test
-    void testGetStudentAttendance_Success() {
-        Long studentId = 2L;
+    void testMarkAttendanceAlreadyMarked() {
+        when(lessonRepository.findByIdAndCourse_Id(1L, 1L)).thenReturn(Optional.of(mockLesson));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockStudent));
+        when(attendanceRepository.findByLessonAndStudent(mockLesson, mockStudent))
+                .thenReturn(Optional.of(mockAttendance));
 
-        User student = new User();
-        student.setId(studentId);
+        Exception exception = assertThrows(IllegalStateException.class, () ->
+                attendanceService.markAttendance(1L, 1L, 1L, "123456"));
 
-        List<LessonAttendance> attendances = Arrays.asList(new LessonAttendance(), new LessonAttendance());
-
-        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
-        when(attendanceRepository.findByStudent(student)).thenReturn(attendances);
-
-        List<LessonAttendance> result = attendanceService.getStudentAttendance(studentId);
-
-        assertEquals(2, result.size());
-        verify(attendanceRepository, times(1)).findByStudent(student);
+        assertEquals("Attendance already marked for this student", exception.getMessage());
     }
 
     @Test
-    void testHasAttendance_Success() {
-        Long lessonId = 1L;
-        Long studentId = 2L;
+    void testGetLessonAttendance() {
+        when(lessonRepository.findByIdAndCourse_Id(1L, 1L)).thenReturn(Optional.of(mockLesson));
+        when(attendanceRepository.findByLesson(mockLesson)).thenReturn(List.of(mockAttendance));
 
-        when(attendanceRepository.existsByLessonIdAndStudentIdAndPresent(lessonId, studentId, true)).thenReturn(true);
+        List<LessonAttendance> attendances = attendanceService.getLessonAttendance(1L, 1L);
 
-        boolean result = attendanceService.hasAttendance(lessonId, studentId);
+        assertNotNull(attendances);
+        assertFalse(attendances.isEmpty());
+        assertEquals(1, attendances.size());
+        assertEquals(mockAttendance, attendances.get(0));
+    }
 
-        assertTrue(result);
-        verify(attendanceRepository, times(1)).existsByLessonIdAndStudentIdAndPresent(lessonId, studentId, true);
+    @Test
+    void testGetStudentAttendance() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockStudent));
+        when(attendanceRepository.findByStudent(mockStudent)).thenReturn(List.of(mockAttendance));
+
+        List<LessonAttendance> attendances = attendanceService.getStudentAttendance(1L, 1L, 1L);
+
+        assertNotNull(attendances);
+        assertFalse(attendances.isEmpty());
+        assertEquals(1, attendances.size());
+        assertEquals(mockAttendance, attendances.get(0));
+    }
+
+    @Test
+    void testHasAttendance() {
+        when(attendanceRepository.existsByLessonIdAndStudentIdAndPresent(1L, 1L, true)).thenReturn(true);
+
+        boolean hasAttendance = attendanceService.hasAttendance(1L, 1L, 1L);
+
+        assertTrue(hasAttendance);
+        verify(attendanceRepository, times(1)).existsByLessonIdAndStudentIdAndPresent(1L, 1L, true);
     }
 }

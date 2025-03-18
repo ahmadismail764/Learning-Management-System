@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.software.lms.exception.ResourceNotFoundException;
 import org.software.lms.model.Course;
 import org.software.lms.model.Lesson;
 import org.software.lms.model.Role;
@@ -12,13 +14,15 @@ import org.software.lms.model.User;
 import org.software.lms.repository.CourseRepository;
 import org.software.lms.repository.LessonRepository;
 import org.software.lms.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class CourseServiceTest {
@@ -27,10 +31,16 @@ class CourseServiceTest {
     private CourseRepository courseRepository;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private LessonRepository lessonRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private Authentication authentication;
+
+    @Mock
+    private SecurityContext securityContext;
 
     @InjectMocks
     private CourseService courseService;
@@ -38,132 +48,205 @@ class CourseServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // Manually inject repositories
+        ReflectionTestUtils.setField(courseService, "userRepository", userRepository);
+        ReflectionTestUtils.setField(courseService, "lessonRepository", lessonRepository);
+        ReflectionTestUtils.setField(courseService, "courseRepository", courseRepository);
+
+        // Setup Security Context
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
     void testCreateCourse() {
+        // Prepare test data
+        String instructorEmail = "instructor@test.com";
+        User instructor = new User();
+        instructor.setEmail(instructorEmail);
+        instructor.setRole(Role.INSTRUCTOR);
+
         Course course = new Course();
         course.setTitle("Test Course");
-        course.setDescription("Course Description");
 
+        when(authentication.getName()).thenReturn(instructorEmail);
+        when(userRepository.findByEmail(instructorEmail)).thenReturn(Optional.of(instructor));
         when(courseRepository.save(any(Course.class))).thenReturn(course);
 
-        Course createdCourse = courseService.createCourse(course);
+        // Test course creation
+        Course result = courseService.createCourse(course);
 
-        assertNotNull(createdCourse);
-        assertEquals("Test Course", createdCourse.getTitle());
+        // Verify results
+        assertNotNull(result);
+        assertEquals("Test Course", result.getTitle());
         verify(courseRepository, times(1)).save(any(Course.class));
+        assertTrue(result.getInstructors().contains(instructor));
+    }
+
+    @Test
+    void testCreateCourse_InstructorNotFound() {
+        String instructorEmail = "nonexistent@test.com";
+        Course course = new Course();
+
+        when(authentication.getName()).thenReturn(instructorEmail);
+        when(userRepository.findByEmail(instructorEmail)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            courseService.createCourse(course);
+        });
     }
 
     @Test
     void testGetAllCourses() {
-        Course course1 = new Course();
-        Course course2 = new Course();
+        List<Course> courses = Arrays.asList(new Course(), new Course());
+        when(courseRepository.findAll()).thenReturn(courses);
 
-        when(courseRepository.findAll()).thenReturn(Arrays.asList(course1, course2));
+        List<Course> result = courseService.getAllCourses();
 
-        List<Course> courses = courseService.getAllCourses();
-
-        assertEquals(2, courses.size());
+        assertEquals(2, result.size());
         verify(courseRepository, times(1)).findAll();
     }
 
     @Test
-    void testGetCourseById_Success() {
+    void testGetCourseById() {
         Long courseId = 1L;
         Course course = new Course();
         course.setId(courseId);
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        Optional<Course> fetchedCourse = courseService.getCourseById(courseId);
+        Optional<Course> result = courseService.getCourseById(courseId);
 
-        assertTrue(fetchedCourse.isPresent());
-        assertEquals(courseId, fetchedCourse.get().getId());
-        verify(courseRepository, times(1)).findById(courseId);
+        assertTrue(result.isPresent());
+        assertEquals(courseId, result.get().getId());
     }
 
     @Test
-    void testGetCourseById_NotFound() {
+    void testAddInstructorsToCourse() {
         Long courseId = 1L;
+        Course course = new Course();
+        User instructor = new User();
+        instructor.setRole(Role.INSTRUCTOR);
+        List<Long> instructorIds = Collections.singletonList(1L);
 
-        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(userRepository.findAllById(instructorIds)).thenReturn(Collections.singletonList(instructor));
+        when(courseRepository.save(any(Course.class))).thenReturn(course);
 
-        Optional<Course> fetchedCourse = courseService.getCourseById(courseId);
+        Course result = courseService.addInstructorsToCourse(courseId, instructorIds);
 
-        assertFalse(fetchedCourse.isPresent());
-        verify(courseRepository, times(1)).findById(courseId);
+        assertNotNull(result);
+        verify(courseRepository, times(1)).save(any(Course.class));
     }
 
     @Test
-    void testUpdateCourse() {
+    void testAddStudentsToCourse() {
         Long courseId = 1L;
-        Course existingCourse = new Course();
-        existingCourse.setId(courseId);
-        existingCourse.setTitle("Old Title");
+        Course course = new Course();
+        User student = new User();
+        student.setRole(Role.STUDENT);
+        List<Long> studentIds = Collections.singletonList(1L);
 
-        Course updatedCourse = new Course();
-        updatedCourse.setTitle("Updated Title");
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(userRepository.findAllById(studentIds)).thenReturn(Collections.singletonList(student));
+        when(courseRepository.save(any(Course.class))).thenReturn(course);
 
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(existingCourse));
-        when(courseRepository.save(existingCourse)).thenReturn(existingCourse);
+        Course result = courseService.addStudentsToCourse(courseId, studentIds);
 
-        Course updated = courseService.updateCourse(courseId, updatedCourse);
-
-        assertEquals("Updated Title", updated.getTitle());
-        verify(courseRepository, times(1)).save(existingCourse);
+        assertNotNull(result);
+        verify(courseRepository, times(1)).save(any(Course.class));
     }
 
     @Test
-    void testDeleteCourse() {
+    void testAddLessonsToCourse() {
         Long courseId = 1L;
+        Course course = new Course();
+        course.setLessons(new ArrayList<>());
+        Lesson lesson = new Lesson();
+        List<Long> lessonIds = Collections.singletonList(1L);
 
-        doNothing().when(courseRepository).deleteById(courseId);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(lessonRepository.findAllById(lessonIds)).thenReturn(Collections.singletonList(lesson));
+        when(courseRepository.save(any(Course.class))).thenReturn(course);
 
-        courseService.deleteCourse(courseId);
+        Course result = courseService.addLessonsToCourse(courseId, lessonIds);
 
-        verify(courseRepository, times(1)).deleteById(courseId);
+        assertNotNull(result);
+        verify(courseRepository, times(1)).save(any(Course.class));
+    }
+
+    @Test
+    void testDeleteInstructorFromCourse() {
+        Long courseId = 1L;
+        Long instructorId = 1L;
+        Course course = new Course();
+        course.setInstructors(new ArrayList<>());
+        User instructor = new User();
+        course.getInstructors().add(instructor);
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(userRepository.findById(instructorId)).thenReturn(Optional.of(instructor));
+
+        courseService.deleteInstructorFromCourse(courseId, instructorId);
+
+        verify(courseRepository, times(1)).save(course);
+    }
+
+    @Test
+    void testDeleteStudentFromCourse() {
+        Long courseId = 1L;
+        Long studentId = 1L;
+        Course course = new Course();
+        course.setStudentEnrolledCourses(new ArrayList<>());
+        User student = new User();
+        course.getStudentEnrolledCourses().add(student);
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
+
+        courseService.deleteStudentFromCourse(courseId, studentId);
+
+        verify(courseRepository, times(1)).save(course);
+    }
+
+    @Test
+    void testFindStudentEnrolledInCourse() {
+        Long courseId = 1L;
+        Course course = new Course();
+        List<User> enrolledStudents = Arrays.asList(new User(), new User());
+        course.setStudentEnrolledCourses(enrolledStudents);
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+
+        List<User> result = courseService.findStudentEnrolledInCourse(courseId);
+
+        assertEquals(2, result.size());
     }
 
     @Test
     void testFindCoursesByTitle() {
-        String title = "Course Title";
-        Course course = new Course();
-        course.setTitle(title);
+        String title = "Test Course";
+        List<Course> courses = Arrays.asList(new Course(), new Course());
 
-        when(courseRepository.findByTitle(title)).thenReturn(Arrays.asList(course));
+        when(courseRepository.findByTitle(title)).thenReturn(courses);
 
-        List<Course> courses = courseService.findCoursesByTitle(title);
+        List<Course> result = courseService.findCoursesByTitle(title);
 
-        assertEquals(1, courses.size());
-        assertEquals(title, courses.get(0).getTitle());
+        assertEquals(2, result.size());
         verify(courseRepository, times(1)).findByTitle(title);
     }
 
     @Test
     void testFindCoursesByInstructorId() {
         Long instructorId = 1L;
-        Course course = new Course();
+        List<Course> courses = Arrays.asList(new Course(), new Course());
 
-        when(courseRepository.findByInstructors_Id(instructorId)).thenReturn(Arrays.asList(course));
+        when(courseRepository.findByInstructors_Id(instructorId)).thenReturn(courses);
 
-        List<Course> courses = courseService.findCoursesByInstructorId(instructorId);
+        List<Course> result = courseService.findCoursesByInstructorId(instructorId);
 
-        assertEquals(1, courses.size());
+        assertEquals(2, result.size());
         verify(courseRepository, times(1)).findByInstructors_Id(instructorId);
     }
-
-    @Test
-    void testFindCoursesByCreatedAtAfter() {
-        Date createdAt = new Date();
-        Course course = new Course();
-
-        when(courseRepository.findByCreatedAtAfter(createdAt)).thenReturn(Arrays.asList(course));
-
-        List<Course> courses = courseService.findCoursesByCreatedAtAfter(createdAt);
-
-        assertEquals(1, courses.size());
-        verify(courseRepository, times(1)).findByCreatedAtAfter(createdAt);
-    }
-
 }

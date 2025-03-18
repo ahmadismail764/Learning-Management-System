@@ -2,27 +2,27 @@ package org.software.lms.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.software.lms.dto.AuthenticationRequest;
 import org.software.lms.dto.AuthenticationResponse;
-import org.software.lms.model.Role;
-import org.software.lms.model.User;
-import org.software.lms.repository.UserRepository;
-import org.software.lms.security.JwtUtil;
+import org.software.lms.model.*;
+import org.software.lms.repository.*;
+import org.software.lms.service.*;
+import org.software.lms.security.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
 
     @InjectMocks
@@ -40,100 +40,86 @@ class AuthenticationServiceTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
+    private User mockUser;
+    private AuthenticationRequest mockRequest;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setEmail("test@example.com");
+        mockUser.setPassword("encoded_password");
+        mockUser.setFirstName("Test");
+        mockUser.setLastName("User");
+        mockUser.setRole(Role.STUDENT);
+
+        mockRequest = new AuthenticationRequest();
+        mockRequest.setEmail("test@example.com");
+        mockRequest.setPassword("password");
+        mockRequest.setFirstName("Test");
+        mockRequest.setLastName("User");
+        mockRequest.setRole(Role.STUDENT);
     }
 
     @Test
     void testRegister_Success() {
-        // Arrange
-        AuthenticationRequest request = new AuthenticationRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("password");
-        request.setFirstName("John");
-        request.setLastName("Doe");
-        request.setRole(Role.STUDENT);
+        when(userRepository.findByEmail(mockRequest.getEmail())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(mockRequest.getPassword())).thenReturn("encoded_password");
+        when(userRepository.save(any(User.class))).thenReturn(mockUser);
+        when(jwtUtil.generateToken(any())).thenReturn("jwt_token");
 
-        User user = new User();
-        user.setId(1L);
-        user.setEmail(request.getEmail());
-        user.setPassword("encodedPassword");
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setRole(request.getRole());
+        AuthenticationResponse response = authenticationService.register(mockRequest);
 
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(request.getPassword())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(user);
-        when(jwtUtil.generateToken(any(UserDetails.class))).thenReturn("mockJwtToken");
-
-        // Act
-        AuthenticationResponse response = authenticationService.register(request);
-
-        // Assert
         assertNotNull(response);
-        assertEquals("test@example.com", response.getEmail());
-        assertEquals("mockJwtToken", response.getToken());
+        assertEquals(mockUser.getId(), response.getId());
+        assertEquals(mockUser.getEmail(), response.getEmail());
+        assertEquals("jwt_token", response.getToken());
+
+        verify(userRepository, times(1)).findByEmail(mockRequest.getEmail());
         verify(userRepository, times(1)).save(any(User.class));
+        verify(jwtUtil, times(1)).generateToken(any());
     }
 
     @Test
-    void testRegister_EmailAlreadyInUse() {
-        // Arrange
-        AuthenticationRequest request = new AuthenticationRequest();
-        request.setEmail("test@example.com");
+    void testRegister_EmailAlreadyExists() {
+        when(userRepository.findByEmail(mockRequest.getEmail())).thenReturn(Optional.of(mockUser));
 
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(new User()));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authenticationService.register(mockRequest));
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> authenticationService.register(request));
         assertEquals("Email already in use", exception.getMessage());
+        verify(userRepository, times(1)).findByEmail(mockRequest.getEmail());
+        verify(userRepository, never()).save(any());
     }
 
     @Test
     void testAuthenticate_Success() {
-        // Arrange
-        AuthenticationRequest request = new AuthenticationRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("password");
-
-        User user = new User();
-        user.setId(1L);
-        user.setEmail(request.getEmail());
-        user.setPassword("encodedPassword");
-        user.setRole(Role.STUDENT);
-
-        Authentication mockAuthentication = mock(Authentication.class);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(mockAuthentication);
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
-        when(jwtUtil.generateToken(any(UserDetails.class))).thenReturn("mockJwtToken");
+                .thenReturn(mock(Authentication.class));
+        when(userRepository.findByEmail(mockRequest.getEmail())).thenReturn(Optional.of(mockUser));
+        when(jwtUtil.generateToken(any())).thenReturn("jwt_token");
 
-        // Act
-        AuthenticationResponse response = authenticationService.authenticate(request);
+        AuthenticationResponse response = authenticationService.authenticate(mockRequest);
 
-        // Assert
         assertNotNull(response);
-        assertEquals("test@example.com", response.getEmail());
-        assertEquals("mockJwtToken", response.getToken());
+        assertEquals(mockUser.getId(), response.getId());
+        assertEquals(mockUser.getEmail(), response.getEmail());
+        assertEquals("jwt_token", response.getToken());
+
+        verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userRepository, times(1)).findByEmail(mockRequest.getEmail());
+        verify(jwtUtil, times(1)).generateToken(any());
     }
 
     @Test
     void testAuthenticate_UserNotFound() {
-        // Arrange
-        AuthenticationRequest request = new AuthenticationRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("password");
-
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(mock(Authentication.class));
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(mockRequest.getEmail())).thenReturn(Optional.empty());
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> authenticationService.authenticate(request));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authenticationService.authenticate(mockRequest));
+
         assertEquals("User not found", exception.getMessage());
+        verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userRepository, times(1)).findByEmail(mockRequest.getEmail());
     }
 }

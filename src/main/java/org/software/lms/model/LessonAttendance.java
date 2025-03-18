@@ -74,12 +74,12 @@ public class LessonAttendance {
     }
 
     public void setPresent(Boolean present) {
-        present = present;
+        this.present = present;
     }
 
 
 
-    public LessonAttendance(Long id, Lesson lesson, User student, Date attendanceDate, String otpUsed, Boolean isPresent, Integer attemptCount, Date lastAttemptTime) {
+    public LessonAttendance(Long id, Lesson lesson, User student, Date attendanceDate, String otpUsed, Boolean present, Integer attemptCount, Date lastAttemptTime) {
         this.id = id;
         this.lesson = lesson;
         this.student = student;
