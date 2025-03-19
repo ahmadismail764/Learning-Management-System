@@ -1,134 +1,116 @@
-# **Learning Management System (LMS)**
+# Learning Management System (LMS)
 
-A comprehensive **Java-based Learning Management System** (LMS) designed to manage and organize online courses, assessments, and performance tracking for students, instructors, and administrators. This web-based application leverages **Spring Boot**, **Spring Security**, and a relational database to deliver a feature-rich, scalable solution for online education.
+## Project Overview
+This is a Java-based Learning Management System (LMS) developed using Spring Boot. The system is designed to manage and organize online courses, assessments, and performance tracking from the perspective of students and instructors. It supports a range of user needs with specific features for different user types.
 
----
+## Features
 
-## **Key Features**
+### User Management
+- **User Types**: Admin, Instructor, Student
+- **Role-based Access**: Different permissions based on user roles
+- **Profile Management**: View and update profile information
 
-### **1. User Management**
-- **User Types**:
-  - **Admin**: Manages system settings, creates users, and oversees courses.
-  - **Instructor**: Creates courses, manages course content, adds assignments/quizzes, grades students, and manages enrollments.
-  - **Student**: Enrolls in courses, accesses materials, submits assignments, and views grades.
-  
-- **Core Features**:
-  - Role-based **Registration and Login**.
-  - **Profile Management** for updating user information.
+### Course Management
+- **Course Creation**: Instructors can create courses with details like title, description, duration, etc.
+- **Media Upload**: Support for uploading various media files (videos, PDFs, audio, etc.)
+- **Enrollment Management**: Students can view and enroll in available courses
+- **Lesson Organization**: Courses are organized into lessons for structured learning
 
----
+### Attendance Management
+- **OTP Generation**: Instructors can generate OTPs per lesson to track attendance
+- **Attendance Tracking**: Students can mark attendance by entering the OTP
 
-### **2. Course Management**
-- **Course Creation**:
-  - Instructors can create courses with details such as title, description, and duration.
-  - Upload support for **media files** (e.g., videos, PDFs, audio files).
-  - Courses consist of multiple lessons for students to attend.
-  
-- **Enrollment Management**:
-  - Students can browse and enroll in courses.
-  - Admins and Instructors can view enrolled students for each course.
+### Assessment & Grading
+- **Quiz Creation**: Support for various question types (MCQ, true/false, short answers)
+- **Question Bank**: Instructors can create a repository of questions
+- **Assignment Submission**: File upload functionality for assignments
+- **Grading System**: Instructors can grade submissions and provide feedback
 
-- **Attendance Management**:
-  - Instructors generate an **OTP per lesson** to manage attendance.
-  - Students select a lesson and input the OTP to mark attendance.
+### Performance Tracking
+- **Progress Monitoring**: Track quiz scores, assignments, and attendance
 
----
+## Technical Stack
 
-### **3. Assessment & Grading**
-- **Assessment Types**:
-  - **Quizzes**:
-    - Instructors create quizzes with various question types: MCQs, true/false, short answers.
-    - Build a **question bank** for each course.
-    - Support for randomized question selection for quiz attempts.
-  - **Assignments**:
-    - Students upload files to submit assignments for instructor review.
-  
-- **Grading and Feedback**:
-  - Instructors grade assignments and quizzes.
-  - Automated feedback for quizzes; manual feedback for assignments.
+### Backend
+- Java 17
+- Spring Boot 3.4.0
+- Spring Security
+- Spring Data JPA
+- JWT for Authentication
 
----
+### Database
+- MySQL
 
-### **4. Performance Tracking**
-- **Student Progress**:
-  - Instructors can track:
-    - Quiz scores.
-    - Assignment submissions.
-    - Attendance records.
+### Testing
+- JUnit
+- Mockito
 
----
-
-### **5. Notifications**
-- **System Notifications**:
-  - Students receive notifications for:
-    - Enrollment confirmations.
-    - Graded assignments.
-    - Course updates.
-  - Instructors are notified about:
-    - Student enrollments in their courses.
-  - Notifications are categorized as **read** or **unread** for easy management.
-
-- **Email Notifications**:
-  - Students receive email updates for important events like enrollment confirmations, grades, and course updates.
-
----
-
-### **6. Role-Based Access Control**
-- Implemented with **Spring Security**.
-- Restricts access permissions based on the user role:
-  - Admin, Instructor, or Student.
-
----
-
-### **7. Performance Analytics**
-- Admins and Instructors can:
-  - Generate **Excel reports** for student performance (grades and attendance).
-  - Visualize data through **charts** for progress, performance, and course completion.
-
----
-
-## **Technologies Used**
-- **Backend**: Java, Spring Boot, Spring Security
-- **Database**: MySQL
-- **Authentication**: JSON Web Token (JWT)
-- **Build Tool**: Maven
-- **Testing**: JUnit
-- **Version Control**: Git
-
----
-
-## **Setup Instructions**
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/lms.git
-   cd lms
-   ```
-
-2. **Configure Database**:
-   - Update database settings in `src/main/resources/application.properties`.
-
-3. **Run the Application**:
-   ```bash
-   mvn spring-boot:run
-   ```
-
-4. **Access the Application**:
-   - Open your browser and navigate to: `http://localhost:8080`.
-
----
-
-## **Project Structure**
-```plaintext
+## Project Structure
+```
 src/
 ├── main/
 │   ├── java/org/software/lms/
-│   │   ├── model/        # Entity Classes
-│   │   ├── repository/   # Repository Interfaces
-│   │   ├── service/      # Service Layer
-│   │   ├── controller/   # REST Controllers
-│   │   ├── security/     # JWT & Spring Security Configurations
+│   │   ├── controller/        # REST API controllers
+│   │   ├── dto/               # Data Transfer Objects
+│   │   ├── exception/         # Custom exceptions
+│   │   ├── model/             # Entity classes
+│   │   ├── repository/        # Repository interfaces
+│   │   ├── security/          # JWT & Spring Security configurations
+│   │   ├── service/           # Service layer implementation
+│   │   └── LmsApplication.java # Main application class
 │   └── resources/
-│       ├── application.properties  # Configuration File
-├── test/                 # JUnit Tests
-├── pom.xml               # Maven Configuration
+│       └── application.properties # Configuration file
+├── test/
+│   └── java/org/software/lms/
+│       └── service/           # Service layer tests
+├── pom.xml                    # Maven configuration
 ```
+
+## Prerequisites
+- Java 17 or higher
+- MySQL 8.0 or higher
+- Maven 3.6 or higher
+- Git
+
+## Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/Learning-Management-System.git
+cd Learning-Management-System
+```
+
+### 2. Database Setup
+Create a MySQL database named `lms`:
+```sql
+CREATE DATABASE lms;
+```
+
+### 3. Configure Database Connection
+Update the `application.properties` file with your database credentials:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/lms?useSSL=false&allowPublicKeyRetrieval=true
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
+
+## Testing
+The project includes unit tests using JUnit and Mockito:
+
+## File Upload Configuration
+The system supports file uploads with the following configurations:
+```properties
+file.upload.directory=/path/to/upload/directory
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+file.upload-dir=./uploads
+spring.servlet.multipart.enabled=true
+```
+
+## Security
+- JWT (JSON Web Token) based authentication
+- Role-based authorization
+- Secured REST endpoints
+
+## API Endpoints
+The application provides RESTful API endpoints for all functionalities. A Postman collection is available for testing and documentation purposes.
