@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Frontend</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="app">
+        <h1>Welcome to LMS</h1>
+        <div id="auth-section">
+            <h2>Login</h2>
+            <form id="login-form">
+                <input type="text" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+
+            <h2>Register</h2>
+            <form id="register-form">
+                <input type="text" id="register-email" placeholder="Email" required>
+                <input type="password" id="register-password" placeholder="Password" required>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <h2>Dashboard</h2>
+            <button id="fetch-courses">Fetch Courses</button>
+            <ul id="courses-list"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
